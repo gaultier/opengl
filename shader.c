@@ -50,7 +50,7 @@ GLuint shader_load(const char vertex_file_path[],
     const GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
 
     shader_compile(vertex_shader_id, vertex_file_path);
-    shader_compile(vertex_shader_id, fragment_file_path);
+    shader_compile(fragment_shader_id, fragment_file_path);
 
     // Link
     const GLuint program_id = glCreateProgram();

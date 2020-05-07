@@ -1,6 +1,6 @@
 .POSIX:
 
-CFLAGS = -Wall -Wextra -Wpedantic
+CFLAGS = -Wall -Wextra -Wpedantic -g
 LDFLAGS = -lsdl2 -framework OpenGL 
 
 .PHONY: clean
