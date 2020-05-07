@@ -2,15 +2,12 @@
 
 #include <OpenGL/gl3.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_timer.h>
-#include <SDL2/SDL_video.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "opengl_lifecycle.h"
 #include "types.h"
 
-void gl_loop(SDL_Window* window, SDL_GLContext* context) {
+void gl_loop(SDL_Window* window) {
     u16 fps_desired = 60;
     u16 frame_rate = 1000 / fps_desired;
 
@@ -36,7 +33,7 @@ int main() {
     SDL_GLContext* context;
     if (!gl_init(&window, &context)) return 1;
 
-    gl_loop(window, context);
+    gl_loop(window);
     gl_drop(window, context);
 }
 
