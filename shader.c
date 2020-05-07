@@ -9,6 +9,7 @@
 #include "file.h"
 #include "malloc.h"
 #include "types.h"
+#include "utils.h"
 
 #define BUFFER_CAPACITY 1000
 static u8 buffer[BUFFER_CAPACITY] = "";
@@ -35,12 +36,13 @@ static void shader_compile(GLuint shader_id, const char path[]) {
 
     if (compile_info_len > 0) {
         // There was an error, retrieve it
-        const usize err_msg_len = compile_info_len + 1;
-        u8* err_msg = ogl_malloc(err_msg_len);
-        glGetShaderInfoLog(shader_id, compile_info_len, NULL, (GLchar*)err_msg);
-        fprintf(stderr, "Error compiling the shader: `%.*s`\n",
-                (int)err_msg_len, err_msg);
-        free(err_msg);
+        memset(buffer, 0, BUFFER_CAPACITY);
+
+        const usize err_msg_len = MIN(compile_info_len + 1, BUFFER_CAPACITY);
+
+        glGetShaderInfoLog(shader_id, compile_info_len, NULL, (GLchar*)buffer);
+        fprintf(stderr, "Error compiling the shader: %.*s\n", (int)err_msg_len,
+                buffer);
         exit(1);
     }
 }
@@ -67,13 +69,13 @@ GLuint shader_load(const char vertex_file_path[],
 
     if (compile_info_len > 0) {
         // There was an error, retrieve it
-        const usize err_msg_len = compile_info_len + 1;
-        u8* err_msg = ogl_malloc(err_msg_len);
+        memset(buffer, 0, BUFFER_CAPACITY);
+
+        const usize err_msg_len = MIN(compile_info_len + 1, BUFFER_CAPACITY);
         glGetShaderInfoLog(vertex_shader_id, compile_info_len, NULL,
-                           (GLchar*)err_msg);
-        fprintf(stderr, "Error linking the shader: `%.*s`\n", (int)err_msg_len,
-                err_msg);
-        free(err_msg);
+                           (GLchar*)buffer);
+        fprintf(stderr, "Error linking the shader: %.*s\n", (int)err_msg_len,
+                buffer);
         exit(1);
     }
 
