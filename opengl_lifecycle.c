@@ -7,6 +7,7 @@
 #include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
 
+#include "shader.h"
 #include "types.h"
 
 void gl_drop(SDL_Window* window, SDL_GLContext* context) {
@@ -67,17 +68,25 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     return true;
 }
 
+static GLuint gl_scene_setup() {
+    return shader_load("resources/vertex_shader.glsl",
+                       "resources/fragment_shader.glsl");
+}
+
 void gl_loop(SDL_Window* window) {
     u16 fps_desired = 60;
     u16 frame_rate = 1000 / fps_desired;
 
     u32 start = 0, end = 0, elapsed_time = 0;
 
+    const GLuint program_id = gl_scene_setup();
+
     while (true) {
         start = SDL_GetTicks();
 
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(program_id);
 
         SDL_GL_SwapWindow(window);
 
