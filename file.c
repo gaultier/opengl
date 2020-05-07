@@ -2,30 +2,48 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/errno.h>
+
+#include "malloc.h"
 
 #define BUFFER_SIZE 512
 
-i32 file_read(const char file_path[], u8* content, usize context_capacity,
+i32 file_read(const char file_path[], u8* content, usize content_capacity,
               usize* content_len) {
-    FILE* file = fopen(file_path, "ro");
-    if (!file) {
+    FILE* file = NULL;
+    if ((file = fopen(file_path, "r")) == NULL) {
+        fprintf(stderr, "Could not open the file `%s`: errno=%d error=%s\n",
+                file_path, errno, strerror(errno));
         return errno;
     }
 
-    *content_len = 0;
-    while ((*content_len + BUFFER_SIZE) < context_capacity) {
-        usize bytes_read = fread(&content[*content_len], 1, BUFFER_SIZE, file);
-        if (errno) goto err;
+    int ret = 0;
+    if ((ret = fseek(file, 0, SEEK_END)) != 0) {
+        fprintf(stderr,
+                "Could not move the file cursor to the end of the file `%s`: "
+                "errno=%d error=%s\n",
+                file_path, errno, strerror(errno));
+        return errno;
+    }
+    const size_t file_size = (size_t)ftell(file);
 
-        *content_len += bytes_read;
+    if (file_size > content_capacity) {
+        fprintf(stderr, "File too big: %zu > %zu", file_size, content_capacity);
+        return E2BIG;
     }
 
-    printf("[debug] file content=`%.*s` len=`%zu`\n", (int)*content_len,
-           content, *content_len);
-    fclose(file);
-    return 0;
+    rewind(file);
 
-err:
-    if (file) fclose(file);
-    return errno;
+    const size_t bytes_read = fread(content, 1, file_size, file);
+    if (bytes_read != file_size) {
+        fprintf(stderr,
+                "Could not read whole file: bytes_read=%zu file_size=%zu\n",
+                bytes_read, file_size);
+        return EIO;
+    }
+    *content_len = bytes_read;
+    nul_terminate(content, *content_len);
+
+    fclose(file);
 }

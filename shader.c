@@ -17,10 +17,8 @@ void shader_compile(GLuint shader_id, const char path[]) {
 
     if (file_read(path, shader_src, shader_src_capacity, &shader_src_len) !=
         0) {
-        fprintf(stderr, "Could not open file `%s`: %s", path, strerror(errno));
         exit(errno);
     }
-    nul_terminate(shader_src, shader_src_len);
 
     // Load
     glShaderSource(shader_id, 1, (const GLchar* const)shader_src, NULL);
