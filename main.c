@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "types.h"
+
 int main() {
     atexit(SDL_Quit);
 
@@ -22,14 +24,14 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
     _Bool fullscreen_ = false;
-    Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    u32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
     if (fullscreen_) {
         flags |= SDL_WINDOW_MAXIMIZED;
     }
 
     const char window_title[] = "hello";
-    const int window_width = 800;
-    const int window_height = 600;
+    const u16 window_width = 800;
+    const u16 window_height = 600;
     SDL_Window* window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED, window_width,
                                           window_height, flags);
