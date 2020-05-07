@@ -59,6 +59,9 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
                      SDL_GetError());
         return false;
     }
+
+    glEnable(GL_DEPTH_TEST);
+
     return true;
 }
 
