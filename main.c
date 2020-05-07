@@ -5,17 +5,17 @@
 
 #include "types.h"
 
-void drop(SDL_Window* window, SDL_GLContext* context) {
+void gl_drop(SDL_Window* window, SDL_GLContext* context) {
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
-int main() {
+bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to initialize SDL: %s",
                      SDL_GetError());
-        return 1;
+        return false;
     }
     atexit(SDL_Quit);
 
@@ -38,24 +38,31 @@ int main() {
     const char window_title[] = "hello";
     const u16 window_width = 800;
     const u16 window_height = 600;
-    SDL_Window* window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED, window_width,
-                                          window_height, flags);
+    *window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED,
+                               SDL_WINDOWPOS_CENTERED, window_width,
+                               window_height, flags);
 
-    if (!window) {
+    if (!*window) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to create window: %s",
                      SDL_GetError());
-        return 1;
+        return false;
     }
 
-    SDL_GLContext* context = SDL_GL_CreateContext(window);
-    if (!context) {
+    *context = SDL_GL_CreateContext(*window);
+    if (!*context) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR,
                      "Unable to create context from window: %s",
                      SDL_GetError());
-        return 1;
+        return false;
     }
+    return true;
+}
 
-    drop(window, context);
+int main() {
+    SDL_Window* window;
+    SDL_GLContext* context;
+    if (!gl_init(&window, &context)) return 1;
+
+    gl_drop(window, context);
 }
 
