@@ -5,6 +5,12 @@
 
 #include "types.h"
 
+void drop(SDL_Window* window, SDL_GLContext* context) {
+    SDL_GL_DeleteContext(context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+}
+
 int main() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to initialize SDL: %s",
@@ -49,4 +55,7 @@ int main() {
                      SDL_GetError());
         return 1;
     }
+
+    drop(window, context);
 }
+
