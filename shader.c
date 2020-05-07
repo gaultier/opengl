@@ -28,7 +28,7 @@ static void shader_compile(GLuint shader_id, const char path[]) {
     glCompileShader(shader_id);
 
     // Check for errors
-    bool compile_result = false;
+    GLint compile_result = false;
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, (GLint*)&compile_result);
 
     i32 compile_info_len = 0;
@@ -38,7 +38,8 @@ static void shader_compile(GLuint shader_id, const char path[]) {
         // There was an error, retrieve it
         memset(buffer, 0, BUFFER_CAPACITY);
 
-        const usize err_msg_len = MIN(compile_info_len + 1, BUFFER_CAPACITY);
+        const usize err_msg_len =
+            MIN((usize)compile_info_len + 1, BUFFER_CAPACITY);
 
         glGetShaderInfoLog(shader_id, compile_info_len, NULL, (GLchar*)buffer);
         fprintf(stderr, "Error compiling the shader: %.*s\n", (int)err_msg_len,
@@ -62,7 +63,7 @@ GLuint shader_load(const char vertex_file_path[],
     glLinkProgram(program_id);
 
     // Check for link errors
-    bool compile_result = false;
+    GLint compile_result = false;
     glGetProgramiv(program_id, GL_LINK_STATUS, (GLint*)&compile_result);
     i32 compile_info_len = 0;
     glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &compile_info_len);
@@ -71,7 +72,8 @@ GLuint shader_load(const char vertex_file_path[],
         // There was an error, retrieve it
         memset(buffer, 0, BUFFER_CAPACITY);
 
-        const usize err_msg_len = MIN(compile_info_len + 1, BUFFER_CAPACITY);
+        const usize err_msg_len =
+            MIN((usize)compile_info_len + 1, BUFFER_CAPACITY);
         glGetShaderInfoLog(vertex_shader_id, compile_info_len, NULL,
                            (GLchar*)buffer);
         fprintf(stderr, "Error linking the shader: %.*s\n", (int)err_msg_len,

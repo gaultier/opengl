@@ -1,6 +1,6 @@
 .POSIX:
 
-CFLAGS = -Wall -Wextra -Wpedantic -g
+CFLAGS = -Wall -Wextra -Wpedantic -g -isystem/usr/local/include
 LDFLAGS = -lsdl2 -framework OpenGL 
 
 .PHONY: clean
