@@ -87,6 +87,7 @@ int main() {
     SDL_GLContext* context;
     if (!gl_init(&window, &context)) return 1;
 
+    gl_loop(window, context);
     gl_drop(window, context);
 }
 
