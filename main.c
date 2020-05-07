@@ -1,4 +1,5 @@
-/* #include <GL/gl.h> */
+#define GL_SILENCE_DEPRECATION 1
+
 #include <OpenGL/gl3.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
