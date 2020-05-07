@@ -7,3 +7,4 @@ typedef void* SDL_GLContext;
 
 void gl_drop(SDL_Window* window, SDL_GLContext* context);
 bool gl_init(SDL_Window** window, SDL_GLContext** context);
+void gl_loop(SDL_Window* window);
