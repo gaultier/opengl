@@ -10,7 +10,7 @@
 #include "malloc.h"
 #include "types.h"
 
-void shader_compile(GLuint shader_id, const char path[]) {
+static void shader_compile(GLuint shader_id, const char path[]) {
     const usize shader_src_capacity = 5000;
     u8* const shader_src = ogl_malloc(shader_src_capacity);
     usize shader_src_len = 0;

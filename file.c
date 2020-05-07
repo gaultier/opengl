@@ -7,8 +7,6 @@
 
 #include "malloc.h"
 
-#define BUFFER_SIZE 512
-
 i32 file_read(const char file_path[], u8* content, usize content_capacity,
               usize* content_len) {
     FILE* file = NULL;
