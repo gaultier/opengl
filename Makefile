@@ -1,7 +1,7 @@
 .POSIX:
 
 CFLAGS = -Wall -Wextra -Wpedantic -g
-LDFLAGS = -lsdl2 -framework OpenGL 
+LDFLAGS = -lsdl2 -framework OpenGL -lglew
 
 .PHONY: clean
 

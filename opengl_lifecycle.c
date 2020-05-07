@@ -2,6 +2,7 @@
 
 #include "opengl_lifecycle.h"
 
+#include <GL/glew.h>
 #include <OpenGL/gl3.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_timer.h>
@@ -62,6 +63,14 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
                      SDL_GetError());
         return false;
     }
+
+    GLenum err = glewInit();
+    if (err != GLEW_OK) {
+        fprintf(stderr, "Error initializing glew: %s\n",
+                glewGetErrorString(err));
+        exit(1);
+    }
+    printf("Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
     glEnable(GL_DEPTH_TEST);
 
