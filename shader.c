@@ -10,18 +10,19 @@
 #include "malloc.h"
 #include "types.h"
 
+#define BUFFER_CAPACITY 1000
+static u8 buffer[BUFFER_CAPACITY] = "";
+
 static void shader_compile(GLuint shader_id, const char path[]) {
-    const usize shader_src_capacity = 5000;
-    u8* const shader_src = ogl_malloc(shader_src_capacity);
     usize shader_src_len = 0;
 
-    if (file_read(path, shader_src, shader_src_capacity, &shader_src_len) !=
-        0) {
+    if (file_read(path, buffer, BUFFER_CAPACITY, &shader_src_len) != 0) {
         exit(errno);
     }
 
     // Load
-    glShaderSource(shader_id, 1, (const GLchar* const*)&shader_src, NULL);
+    const GLchar* buffer_ptr = (const GLchar*)&buffer;
+    glShaderSource(shader_id, 1, &buffer_ptr, NULL);
     // Compile
     glCompileShader(shader_id);
 
