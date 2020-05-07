@@ -10,54 +10,77 @@
 #include "malloc.h"
 #include "types.h"
 
-GLuint shader_load(const char vertex_file_path[],
-                   const char fragment_file_path[]) {
-    GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+void shader_compile(GLuint shader_id, const char path[]) {
+    const usize shader_src_capacity = 5000;
+    u8* const shader_src = ogl_malloc(shader_src_capacity);
+    usize shader_src_len = 0;
 
-    const usize vertex_shader_src_capacity = 5000;
-    u8* const vertex_shader_src = ogl_malloc(vertex_shader_src_capacity);
-    usize vertex_shader_src_len = 0;
-
-    if (file_read("vertex_shader.glsl", vertex_shader_src,
-                  vertex_shader_src_capacity, &vertex_shader_src_len) > 1) {
-        fprintf(stderr, "Could not open file `%s`: %s", "vertex_shader.glsl",
-                strerror(errno));
-        exit(errno);
-    }
-
-    const usize fragment_shader_src_capacity = 5000;
-    u8* fragment_shader_src = ogl_malloc(fragment_shader_src_capacity);
-    usize fragment_shader_src_len = 0;
-
-    if (file_read("fragment_shader.glsl", fragment_shader_src,
-                  fragment_shader_src_capacity, &fragment_shader_src_len) > 1) {
-        fprintf(stderr, "Could not open file `%s`: %s", "fragment_shader.glsl",
-                strerror(errno));
+    if (file_read(path, shader_src, shader_src_capacity, &shader_src_len) > 1) {
+        fprintf(stderr, "Could not open file `%s`: %s", path, strerror(errno));
         exit(errno);
     }
 
     // Load
-    glShaderSource(vertex_shader_id, 1, (const GLchar* const)vertex_shader_src,
-                   NULL);
+    glShaderSource(shader_id, 1, (const GLchar* const)shader_src, NULL);
     // Compile
-    glCompileShader(vertex_shader_id);
+    glCompileShader(shader_id);
 
+    // Check for errors
     bool compile_result = false;
-    glGetShaderiv(vertex_shader_id, GL_COMPILE_STATUS, (GLint*)&compile_result);
+    glGetShaderiv(shader_id, GL_COMPILE_STATUS, (GLint*)&compile_result);
 
     i32 compile_info_len = 0;
-    glGetShaderiv(vertex_shader_id, GL_INFO_LOG_LENGTH,
-                  (GLint*)&compile_info_len);
+    glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, (GLint*)&compile_info_len);
 
     if (compile_info_len > 0) {
-        // There was an error
-        u8* err_msg = ogl_malloc(compile_info_len + 1);
+        // There was an error, retrieve it
+        const usize err_msg_len = compile_info_len + 1;
+        u8* err_msg = ogl_malloc(err_msg_len);
+        glGetShaderInfoLog(shader_id, compile_info_len, NULL, (GLchar*)err_msg);
+        fprintf(stderr, "Error compiling the shader: `%.*s`\n",
+                (int)err_msg_len, err_msg);
+        free(err_msg);
+        exit(1);
+    }
+}
+
+GLuint shader_load(const char vertex_file_path[],
+                   const char fragment_file_path[]) {
+    const GLuint vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
+    const GLuint fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
+
+    shader_compile(vertex_shader_id, vertex_file_path);
+    shader_compile(vertex_shader_id, fragment_file_path);
+
+    // Link
+    const GLuint program_id = glCreateProgram();
+    glAttachShader(program_id, vertex_shader_id);
+    glAttachShader(program_id, fragment_shader_id);
+    glLinkProgram(program_id);
+
+    // Check for link errors
+    bool compile_result = false;
+    glGetProgramiv(program_id, GL_LINK_STATUS, (GLint*)&compile_result);
+    i32 compile_info_len = 0;
+    glGetProgramiv(program_id, GL_INFO_LOG_LENGTH, &compile_info_len);
+
+    if (compile_info_len > 0) {
+        // There was an error, retrieve it
+        const usize err_msg_len = compile_info_len + 1;
+        u8* err_msg = ogl_malloc(err_msg_len);
         glGetShaderInfoLog(vertex_shader_id, compile_info_len, NULL,
                            (GLchar*)err_msg);
-        nul_terminate(err_msg, compile_info_len + 1);
-        printf("Error with shader: `%s`\n", err_msg);
+        fprintf(stderr, "Error linking the shader: `%.*s`\n", (int)err_msg_len,
+                err_msg);
+        free(err_msg);
+        exit(1);
     }
 
-    return 0;
+    glDetachShader(program_id, vertex_shader_id);
+    glDetachShader(program_id, fragment_shader_id);
+
+    glDeleteShader(vertex_shader_id);
+    glDeleteShader(fragment_shader_id);
+
+    return program_id;
 }
