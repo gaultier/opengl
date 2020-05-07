@@ -21,7 +21,7 @@ void shader_compile(GLuint shader_id, const char path[]) {
     }
 
     // Load
-    glShaderSource(shader_id, 1, (const GLchar* const)shader_src, NULL);
+    glShaderSource(shader_id, 1, (const GLchar* const*)&shader_src, NULL);
     // Compile
     glCompileShader(shader_id);
 
