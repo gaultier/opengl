@@ -23,6 +23,8 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     }
     atexit(SDL_Quit);
 
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+
     // Version
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
