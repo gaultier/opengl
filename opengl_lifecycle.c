@@ -109,7 +109,7 @@ void gl_loop(SDL_Window* window) {
     /* glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f, projection); */
 
     mat4 view;
-    vec3 eye = {4, 3, 3};
+    vec3 eye = {4, 3, -3};
     vec3 center = {0, 0, 0};
     vec3 up = {0, 1, 0};
     glm_lookat(eye, center, up, view);
