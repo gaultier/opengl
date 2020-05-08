@@ -18,12 +18,14 @@ typedef float f32;
 
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
 
-static void nul_terminate(u8* buffer, usize len) { buffer[len - 1] = '\0'; }
+static inline void nul_terminate(u8* buffer, usize len) {
+    buffer[len - 1] = '\0';
+}
 
-static void* ogl_malloc(usize size) {
+static inline void* ogl_malloc(usize size) {
     void* mem = malloc(size);
     if (!mem) exit(ENOMEM);
     return mem;
 }
 
-static f32 degree_to_radian(f32 degree) { return degree * M_PI / 180; }
+static inline f32 degree_to_radian(f32 degree) { return degree * M_PI / 180; }
