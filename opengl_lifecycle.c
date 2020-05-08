@@ -75,7 +75,7 @@ static GLuint gl_scene_setup() {
 }
 
 static GLuint gl_triangle_vertex_buffer() {
-    static const GLfloat g_vertex_buffer_data[] = {
+    static const f32 g_vertex_buffer_data[] = {
         -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
     };
     // This will identify our vertex buffer
@@ -130,7 +130,7 @@ void gl_loop(SDL_Window* window) {
 
             // Pass matrix to glsl
             const GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
-            glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const float*)mvp);
+            glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const f32*)mvp);
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);

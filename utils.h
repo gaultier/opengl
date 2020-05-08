@@ -14,6 +14,7 @@ typedef uint64_t u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t u8;
+typedef float f32;
 
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
 
@@ -25,4 +26,4 @@ static void* ogl_malloc(usize size) {
     return mem;
 }
 
-static float degree_to_radian(float degree) { return degree * M_PI / 180; }
+static f32 degree_to_radian(f32 degree) { return degree * M_PI / 180; }
