@@ -1,6 +1,7 @@
 #include "shader.h"
 
 #include <errno.h>
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,7 @@ static void shader_compile(GLuint shader_id, const char path[]) {
     if (compile_info_len > 0) {
         // There was an error, retrieve it
         memset(buffer, 0, BUFFER_CAPACITY);
+        assert(compile_info_len+1 < BUFFER_CAPACITY);
 
         const usize err_msg_len =
             MIN((usize)compile_info_len + 1, BUFFER_CAPACITY);
@@ -69,13 +71,11 @@ GLuint shader_load(const char vertex_file_path[],
     if (compile_info_len > 0) {
         // There was an error, retrieve it
         memset(buffer, 0, BUFFER_CAPACITY);
+        assert(compile_info_len+1 < BUFFER_CAPACITY);
 
-        const usize err_msg_len =
-            MIN((usize)compile_info_len + 1, BUFFER_CAPACITY);
-        glGetShaderInfoLog(vertex_shader_id, compile_info_len, NULL,
+        glGetProgramInfoLog(program_id, compile_info_len, NULL,
                            (GLchar*)buffer);
-        fprintf(stderr, "Error linking the shader: %.*s\n", (int)err_msg_len,
-                buffer);
+        fprintf(stderr, "Error linking the shader: %s\n", buffer);
         exit(1);
     }
 
