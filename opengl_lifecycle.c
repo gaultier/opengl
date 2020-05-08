@@ -1,6 +1,6 @@
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_scancode.h>
 #define GL_SILENCE_DEPRECATION 1
-
-#include "opengl_lifecycle.h"
 
 #include <OpenGL/gl3.h>
 #include <SDL2/SDL.h>
@@ -9,6 +9,7 @@
 
 #include "bmp.h"
 #include "cube.h"
+#include "opengl_lifecycle.h"
 #include "shader.h"
 #include "texture_uv.h"
 #include "utils.h"
@@ -158,6 +159,11 @@ void gl_loop(SDL_Window* window) {
             if (event.type == SDL_QUIT) {
                 return;
             }
+            if (event.type == SDL_KEYDOWN &&
+                event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+                return;
+            }
+
             glClearColor(0, 0, 0, 1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glUseProgram(program_id);
