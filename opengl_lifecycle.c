@@ -73,8 +73,8 @@ static void gl_triangle_setup() {
 static GLuint gl_scene_setup() {
     gl_triangle_setup();
 
-    return shader_load("resources/vertex_shader.glsl",
-                       "resources/fragment_shader.glsl");
+    return shader_load("resources/texture_vertex.glsl",
+                       "resources/texture_fragment.glsl");
 }
 
 static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
@@ -96,18 +96,21 @@ static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
 static void texture_load(GLuint* texture_id) {
     const usize data_capacity = 1000 * 1000;
     u8* data = ogl_malloc(data_capacity);
-    usize data_len = 0, width = 0, height = 0;
+    usize data_len = 0, width = 0, height = 0, img_size = 0, data_pos = 0;
 
     bmp_load("resources/uvtemplate.bmp", &data, data_capacity, &data_len,
-             &width, &height);
-    printf("BMP: data_len=%zu, width=%zu height=%zu\n", data_len, width,
-           height);
+             &width, &height, &img_size, &data_pos);
+    u8* const img_data = data + data_pos;
+    printf(
+        "BMP: data_len=%zu, width=%zu height=%zu img_size=%zu data_pos=%zu "
+        "img_data[0]=%hhu\n",
+        data_len, width, height, img_size, data_pos, img_data[0]);
 
     glGenTextures(1, texture_id);
     glBindTexture(GL_TEXTURE_2D, *texture_id);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR,
-                 GL_UNSIGNED_BYTE, data);
+                 GL_UNSIGNED_BYTE, img_data);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
