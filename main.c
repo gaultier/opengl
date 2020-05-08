@@ -9,6 +9,5 @@ int main() {
     if (!gl_init(&window, &context)) return 1;
 
     gl_loop(window);
-    gl_drop(window, context);
 }
 
