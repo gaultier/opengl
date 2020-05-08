@@ -16,7 +16,6 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
                      SDL_GetError());
         return false;
     }
-    atexit(SDL_Quit);
 
     SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 
