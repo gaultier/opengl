@@ -5,19 +5,19 @@
 #include <sys/errno.h>
 
 #include "file.h"
-#include "utils.h"
 
-void bmp_load(const char file_path[], u8** data, usize* data_len) {
+void bmp_load(const char file_path[], u8** data, usize data_capacity,
+              usize* data_len, usize* width, usize* height) {
     assert(data != NULL);
+    const u8 header_len = 54;
+    assert(data_capacity >= header_len);
 
-    u32 data_pos = 0, width = 0, height = 0, img_size = 0;
-
-    const usize data_capacity = 20000;
+    u32 data_pos = 0, img_size = 0;
 
     u32 res = file_read(file_path, *data, data_capacity, data_len);
     if (res != 0) exit(res);
 
-    if (*data_len < 54) {
+    if (*data_len < header_len) {
         fprintf(stderr, "Incomplete bmp header");
         exit(ENODATA);
     }
@@ -29,10 +29,10 @@ void bmp_load(const char file_path[], u8** data, usize* data_len) {
 
     data_pos = (*data)[0x0a];
     img_size = (*data)[0x22];
-    width = (*data)[0x12];
-    height = (*data)[0x16];
+    *width = (*data)[0x12];
+    *height = (*data)[0x16];
 
     // Infer if missing
-    if (img_size == 0) img_size = width * height * 3;
-    if (data_pos == 0) data_pos = 54;
+    if (img_size == 0) img_size = *width * *height * 3;
+    if (data_pos == 0) data_pos = header_len;
 }

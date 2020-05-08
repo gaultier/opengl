@@ -7,6 +7,7 @@
 #include <SDL2/SDL_video.h>
 #include <cglm/cglm.h>
 
+#include "bmp.h"
 #include "cube.h"
 #include "shader.h"
 #include "utils.h"
@@ -91,7 +92,28 @@ static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
                  cube_color_buffer_data, GL_STATIC_DRAW);
 }
 
+static void texture_load(GLuint* texture_id) {
+    const usize data_capacity = 20000;
+    u8* data = ogl_malloc(data_capacity);
+    usize data_len, width = 0, height;
+
+    bmp_load("reources/texture.bmp", &data, data_capacity, &data_len, &width,
+             &height);
+
+    glGenTextures(1, texture_id);
+    glBindTexture(GL_TEXTURE_2D, *texture_id);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR,
+                 GL_UNSIGNED_BYTE, data);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+}
+
 void gl_loop(SDL_Window* window) {
+    GLuint texture_id;
+    texture_load(&texture_id);
+
     const GLuint program_id = gl_scene_setup();
     /* u16 fps_desired = 60; */
     /* u16 frame_rate = 1000 / fps_desired; */
