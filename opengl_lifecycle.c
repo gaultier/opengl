@@ -30,9 +30,9 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    _Bool fullscreen_ = false;
     u32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-    if (fullscreen_) {
+    _Bool fullscreen = false;
+    if (fullscreen) {
         flags |= SDL_WINDOW_MAXIMIZED;
     }
 
