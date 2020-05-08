@@ -112,8 +112,10 @@ static void texture_load(GLuint* texture_id) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR,
                  GL_UNSIGNED_BYTE, img_data);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                    GL_LINEAR_MIPMAP_LINEAR);
+    glGenerateMipmap(GL_TEXTURE_2D);
 }
 
 void gl_loop(SDL_Window* window) {
@@ -132,7 +134,7 @@ void gl_loop(SDL_Window* window) {
     SDL_Event event;
 
     mat4 projection;
-    glm_perspective(degree_to_radian(45.0f), 800 / 600.0, 0.1f, 100.0f,
+    glm_perspective(degree_to_radian(35.0f), 800 / 600.0, 0.1f, 100.0f,
                     projection);
     /* glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f, projection); */
 
