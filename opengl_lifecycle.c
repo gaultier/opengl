@@ -10,6 +10,7 @@
 #include "bmp.h"
 #include "cube.h"
 #include "shader.h"
+#include "texture_uv.h"
 #include "utils.h"
 
 bool gl_init(SDL_Window** window, SDL_GLContext** context) {
@@ -88,17 +89,17 @@ static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
 
     glGenBuffers(1, color_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, *color_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color_buffer_data),
-                 cube_color_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texture_uv_buffer_data),
+                 texture_uv_buffer_data, GL_STATIC_DRAW);
 }
 
 static void texture_load(GLuint* texture_id) {
-    const usize data_capacity = 20000;
+    const usize data_capacity = 1000 * 1000;
     u8* data = ogl_malloc(data_capacity);
     usize data_len, width = 0, height;
 
-    bmp_load("reources/texture.bmp", &data, data_capacity, &data_len, &width,
-             &height);
+    bmp_load("resources/uvtemplate.bmp", &data, data_capacity, &data_len,
+             &width, &height);
 
     glGenTextures(1, texture_id);
     glBindTexture(GL_TEXTURE_2D, *texture_id);
@@ -175,7 +176,7 @@ void gl_loop(SDL_Window* window) {
             glVertexAttribPointer(
                 1,  // attribute 1. No particular reason for 1, but must match
                     // the layout in the shader.
-                3,         // size
+                2,         // size
                 GL_FLOAT,  // type
                 GL_FALSE,  // normalized?
                 0,         // stride
@@ -184,6 +185,7 @@ void gl_loop(SDL_Window* window) {
 
             glDrawArrays(GL_TRIANGLES, 0,
                          12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
+            glDisableVertexAttribArray(1);
             glDisableVertexAttribArray(0);
 
             SDL_GL_SwapWindow(window);
