@@ -1,6 +1,7 @@
 #pragma once
 #include <errno.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
 
@@ -23,3 +24,5 @@ static void* ogl_malloc(usize size) {
     if (!mem) exit(ENOMEM);
     return mem;
 }
+
+static float degree_to_radian(float degree) { return degree * M_PI / 180; }
