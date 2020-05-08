@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
 #include "opengl_lifecycle.h"
-#include "types.h"
+#include "utils.h"
 
 int main() {
     SDL_Window* window;

@@ -7,8 +7,6 @@
 #include <string.h>
 
 #include "file.h"
-#include "malloc.h"
-#include "types.h"
 #include "utils.h"
 
 #define BUFFER_CAPACITY 1000

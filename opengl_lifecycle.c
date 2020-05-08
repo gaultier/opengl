@@ -8,7 +8,7 @@
 #include <SDL2/SDL_video.h>
 
 #include "shader.h"
-#include "types.h"
+#include "utils.h"
 
 bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/errno.h>
 
-#include "malloc.h"
+#include "utils.h"
 
 i32 file_read(const char file_path[], u8* content, usize content_capacity,
               usize* content_len) {
