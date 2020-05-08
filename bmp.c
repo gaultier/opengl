@@ -28,10 +28,10 @@ void bmp_load(const char file_path[], u8** data, usize data_capacity,
         exit(EINVAL);
     }
 
-    data_pos = (*data)[0x0a];
-    img_size = (*data)[0x22];
-    *width = (*data)[0x12];
-    *height = (*data)[0x16];
+    data_pos = *(u32*)&((*data)[0x0a]);
+    img_size = *(u32*)&((*data)[0x22]);
+    *width = *(u32*)&((*data)[0x12]);
+    *height = *(u32*)&((*data)[0x16]);
 
     // Infer if missing
     if (img_size == 0) img_size = *width * *height * 3;
