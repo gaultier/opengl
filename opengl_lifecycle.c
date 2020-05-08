@@ -75,18 +75,20 @@ static GLuint gl_scene_setup() {
                        "resources/fragment_shader.glsl");
 }
 
-static GLuint gl_triangle_vertex_buffer() {
-    // This will identify our vertex buffer
-    GLuint vertexbuffer;
+static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
+                                      GLuint* color_buffer) {
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
-    glGenBuffers(1, &vertexbuffer);
+    glGenBuffers(1, vertex_buffer);
     // The following commands will talk about our 'vertexbuffer' buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, *vertex_buffer);
     // Give our vertices to OpenGL.
     glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertex_buffer_data),
                  cube_vertex_buffer_data, GL_STATIC_DRAW);
 
-    return vertexbuffer;
+    glGenBuffers(1, color_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, *color_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_color_buffer_data),
+                 cube_color_buffer_data, GL_STATIC_DRAW);
 }
 
 void gl_loop(SDL_Window* window) {
@@ -96,7 +98,9 @@ void gl_loop(SDL_Window* window) {
 
     /* u32 start = 0, end = 0, elapsed_time = 0; */
 
-    GLuint vertexbuffer = gl_triangle_vertex_buffer();
+    GLuint vertex_buffer, color_buffer;
+    gl_triangle_vertex_buffer(&vertex_buffer, &color_buffer);
+
     SDL_Event event;
 
     mat4 projection;
@@ -133,7 +137,7 @@ void gl_loop(SDL_Window* window) {
             glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const f32*)mvp);
 
             glEnableVertexAttribArray(0);
-            glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+            glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
             glVertexAttribPointer(
                 0,  // attribute 0. No particular reason for 0, but must match
                     // the layout in the shader.
@@ -143,7 +147,19 @@ void gl_loop(SDL_Window* window) {
                 0,         // stride
                 (void*)0   // array buffer offset
             );
-            // Draw the triangle !
+
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
+            glVertexAttribPointer(
+                1,  // attribute 1. No particular reason for 1, but must match
+                    // the layout in the shader.
+                3,         // size
+                GL_FLOAT,  // type
+                GL_FALSE,  // normalized?
+                0,         // stride
+                (void*)0   // array buffer offset
+            );
+
             glDrawArrays(GL_TRIANGLES, 0,
                          12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
             glDisableVertexAttribArray(0);
