@@ -40,8 +40,7 @@ u32 file_read(const char file_path[], u8* content, usize content_capacity,
                 bytes_read, file_size);
         return EIO;
     }
-    *content_len = bytes_read + 1;
-    nul_terminate(content, *content_len - 1);
+    *content_len = bytes_read;
 
     fclose(file);
 

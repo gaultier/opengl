@@ -18,7 +18,8 @@ void bmp_load(const char file_path[], u8** data, usize data_capacity,
     if (res != 0) exit(res);
 
     if (*data_len < header_len) {
-        fprintf(stderr, "Incomplete bmp header");
+        fprintf(stderr, "Incomplete bmp header: %zu < %hhu", *data_len,
+                header_len);
         exit(ENODATA);
     }
 

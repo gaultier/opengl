@@ -96,10 +96,12 @@ static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
 static void texture_load(GLuint* texture_id) {
     const usize data_capacity = 1000 * 1000;
     u8* data = ogl_malloc(data_capacity);
-    usize data_len, width = 0, height;
+    usize data_len = 0, width = 0, height = 0;
 
     bmp_load("resources/uvtemplate.bmp", &data, data_capacity, &data_len,
              &width, &height);
+    printf("BMP: data_len=%zu, width=%zu height=%zu\n", data_len, width,
+           height);
 
     glGenTextures(1, texture_id);
     glBindTexture(GL_TEXTURE_2D, *texture_id);
