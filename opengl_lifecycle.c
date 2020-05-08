@@ -104,6 +104,8 @@ void gl_loop(SDL_Window* window) {
     mat4 projection;
     glm_perspective(degree_to_radian(45.0f), 800 / 600.0, 0.1f, 100.0f,
                     projection);
+    /* glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f, projection); */
+
     mat4 view;
     vec3 eye = {4, 3, 3};
     vec3 center = {0, 0, 0};
