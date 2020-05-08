@@ -4,8 +4,8 @@
 
 #include <OpenGL/gl3.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_timer.h>
 #include <SDL2/SDL_video.h>
+#include <cglm/cglm.h>
 
 #include "shader.h"
 #include "utils.h"
@@ -103,6 +103,24 @@ void gl_loop(SDL_Window* window) {
 
     while (true) {
         /* start = SDL_GetTicks(); */
+        mat4 projection;
+        glm_perspective(10.0, 800 / 600.0, 0.1f, 100.0f, projection);
+        mat4 view;
+        vec3 eye = {4, 3, 3};
+        vec3 center = {0, 0, 0};
+        vec3 up = {0, 1, 0};
+        glm_lookat(eye, center, up, view);
+
+        mat4 model;
+        glm_mat4_identity(model);
+
+        mat4 mvp;
+        glm_mat4_mul(projection, view, mvp);
+        glm_mat4_mul(mvp, model, mvp);
+
+        // Pass matrix to glsl
+        const GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
+        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const float*)mvp);
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
