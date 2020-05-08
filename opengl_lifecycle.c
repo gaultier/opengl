@@ -7,6 +7,7 @@
 #include <SDL2/SDL_video.h>
 #include <cglm/cglm.h>
 
+#include "cube.h"
 #include "shader.h"
 #include "utils.h"
 
@@ -75,9 +76,6 @@ static GLuint gl_scene_setup() {
 }
 
 static GLuint gl_triangle_vertex_buffer() {
-    static const f32 g_vertex_buffer_data[] = {
-        -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-    };
     // This will identify our vertex buffer
     GLuint vertexbuffer;
     // Generate 1 buffer, put the resulting identifier in vertexbuffer
@@ -85,8 +83,8 @@ static GLuint gl_triangle_vertex_buffer() {
     // The following commands will talk about our 'vertexbuffer' buffer
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
     // Give our vertices to OpenGL.
-    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data),
-                 g_vertex_buffer_data, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertex_buffer_data),
+                 cube_vertex_buffer_data, GL_STATIC_DRAW);
 
     return vertexbuffer;
 }
@@ -146,9 +144,8 @@ void gl_loop(SDL_Window* window) {
                 (void*)0   // array buffer offset
             );
             // Draw the triangle !
-            glDrawArrays(
-                GL_TRIANGLES, 0,
-                3);  // Starting from vertex 0; 3 vertices total -> 1 triangle
+            glDrawArrays(GL_TRIANGLES, 0,
+                         12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
             glDisableVertexAttribArray(0);
 
             SDL_GL_SwapWindow(window);
