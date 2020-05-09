@@ -154,6 +154,8 @@ void gl_loop(SDL_Window* window) {
     i32 pos_x = 1024 / 2.0, pos_y = 768 / 2.0;
 
     SDL_SetRelativeMouseMode(SDL_FALSE);
+    SDL_WarpMouseInWindow(window, pos_x, pos_y);
+
     while (true) {
         start = SDL_GetTicks();
 
@@ -214,12 +216,11 @@ void gl_loop(SDL_Window* window) {
             }
         }
 
-        /* angle_horizontal += */
-        /*     mouse_speed * delta_time * pos_x;  // * (float)(1024 / 2.0 -
-         * pos_x); */
-        /* angle_vertical += */
-        /*     mouse_speed * delta_time * pos_y;  // * (float)(768 / 2.0 -
-         * pos_y); */
+        angle_horizontal += (float)delta_time * (float)pos_x *
+                            (float)(1024 / 2.0 - pos_x) / 1000000;
+        angle_vertical += (float)delta_time * (float)pos_y *
+                          (float)(768 / 2.0 - pos_y) / 1000000;
+
         direction[0] = cos(angle_vertical) * sin(angle_horizontal);
         direction[1] = sin(angle_vertical);
         direction[2] = cos(angle_vertical) * cos(angle_horizontal);
@@ -284,5 +285,6 @@ void gl_loop(SDL_Window* window) {
 
         /* if (elapsed_time < frame_rate) SDL_Delay(frame_rate - elapsed_time);
          */
+        SDL_WarpMouseInWindow(window, 1024 / 2.0, 768 / 2.0);
     }
 }
