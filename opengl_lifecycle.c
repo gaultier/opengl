@@ -64,6 +64,7 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     }
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     return true;
 }
