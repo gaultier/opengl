@@ -207,6 +207,9 @@ void gl_loop(SDL_Window* window) {
                             break;
                     }
                     break;
+                case SDL_MOUSEWHEEL:
+                    fov += (event.wheel.y > 0) ? 1 : -1;
+                    break;
                 case SDL_MOUSEMOTION:
                     pos_x = event.motion.x;
                     pos_y = event.motion.y;
