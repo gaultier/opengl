@@ -43,8 +43,8 @@ bool gl_init(SDL_Window** window, SDL_GLContext** context) {
     }
 
     const char window_title[] = "hello";
-    const u16 window_width = 800;
-    const u16 window_height = 600;
+    const u16 window_width = 1024;
+    const u16 window_height = 768;
     *window = SDL_CreateWindow(window_title, SDL_WINDOWPOS_CENTERED,
                                SDL_WINDOWPOS_CENTERED, window_width,
                                window_height, flags);
@@ -142,14 +142,16 @@ void gl_loop(SDL_Window* window) {
     mat4 model;
     glm_mat4_identity(model);
 
-    vec3 position = {0, 0, 5};
-    f32 angle_horizontal = 3.14f;
-    f32 angle_vertical = 0;
+    vec3 position = {0, -1, 5};
+    vec3 direction = {-3, -2, 4};
+    vec3 right = {8, 1, 1};
+    f32 angle_horizontal = 3.0;
+    f32 angle_vertical = .4;
     f32 fov = 80;
-    /* f32 speed = 3; */
-    f32 mouse_speed = 0.005f;
+    f32 speed = 0.01;
+    /* f32 mouse_speed = 0.005f; */
 
-    i32 pos_x = 800 / 2.0, pos_y = 600 / 2.0;
+    i32 pos_x = 1024 / 2.0, pos_y = 768 / 2.0;
 
     SDL_SetRelativeMouseMode(SDL_FALSE);
     while (true) {
@@ -160,8 +162,49 @@ void gl_loop(SDL_Window* window) {
                 case SDL_QUIT:
                     return;
                 case SDL_KEYDOWN:
-                    if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
-                        return;
+                    switch (event.key.keysym.scancode) {
+                        case SDL_SCANCODE_ESCAPE:
+                            return;
+                        case SDL_SCANCODE_UP: {
+                            vec3 mul_factor = {delta_time * speed,
+                                               delta_time * speed,
+                                               delta_time * speed};
+                            vec3 position_rel;
+                            glm_vec3_mul(direction, mul_factor, position_rel);
+                            glm_vec3_add(position, position_rel, position);
+                            break;
+                        }
+                        case SDL_SCANCODE_DOWN: {
+                            vec3 mul_factor = {delta_time * speed,
+                                               delta_time * speed,
+                                               delta_time * speed};
+                            vec3 position_rel;
+                            glm_vec3_mul(direction, mul_factor, position_rel);
+                            glm_vec3_sub(position, position_rel, position);
+                            break;
+                        }
+                        case SDL_SCANCODE_LEFT: {
+                            vec3 mul_factor = {delta_time * speed,
+                                               delta_time * speed,
+                                               delta_time * speed};
+                            vec3 position_rel;
+                            glm_vec3_mul(right, mul_factor, position_rel);
+                            glm_vec3_add(position, position_rel, position);
+                            break;
+                        }
+                        case SDL_SCANCODE_RIGHT: {
+                            vec3 mul_factor = {delta_time * speed,
+                                               delta_time * speed,
+                                               delta_time * speed};
+                            vec3 position_rel;
+                            glm_vec3_mul(right, mul_factor, position_rel);
+                            glm_vec3_sub(position, position_rel, position);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                    break;
                 case SDL_MOUSEMOTION:
                     pos_x = event.motion.x;
                     pos_y = event.motion.y;
@@ -171,29 +214,28 @@ void gl_loop(SDL_Window* window) {
             }
         }
 
-        printf("pos_x=%d pos_y=%d\n", pos_x, pos_y);
-
         /* angle_horizontal += */
-        /*     mouse_speed * delta_time * pos_x;  // * (float)(800 / 2.0 -
+        /*     mouse_speed * delta_time * pos_x;  // * (float)(1024 / 2.0 -
          * pos_x); */
         /* angle_vertical += */
-        /*     mouse_speed * delta_time * pos_y;  // * (float)(600 / 2.0 -
+        /*     mouse_speed * delta_time * pos_y;  // * (float)(768 / 2.0 -
          * pos_y); */
-        vec3 direction = {cos(angle_vertical) * sin(angle_horizontal),
-                          sin(angle_vertical),
-                          cos(angle_vertical) * cos(angle_horizontal)};
-        vec3 right = {sin(angle_horizontal - M_PI / 2.0f), 0,
-                      cos(angle_horizontal - M_PI / 2.0f)};
+        direction[0] = cos(angle_vertical) * sin(angle_horizontal);
+        direction[1] = sin(angle_vertical);
+        direction[2] = cos(angle_vertical) * cos(angle_horizontal);
+        right[0] = sin(angle_horizontal - M_PI / 2.0f);
+        right[2] = cos(angle_horizontal - M_PI / 2.0f);
+
         vec3 up;
         glm_vec3_cross(right, direction, up);
 
-        mat4 view;
         vec3 center;
         glm_vec3_add(position, direction, center);
+        mat4 view;
         glm_lookat(position, center, up, view);
 
         mat4 projection;
-        glm_perspective(degree_to_radian(fov), 800 / 600.0, 0.1f, 100.0f,
+        glm_perspective(degree_to_radian(fov), 1024 / 768.0, 0.1f, 100.0f,
                         projection);
 
         mat4 mvp;
