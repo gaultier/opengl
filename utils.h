@@ -17,6 +17,8 @@ typedef uint8_t u8;
 typedef float f32;
 
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
+#define CLAMP(x, xmin, xmax) \
+    ((x) < (xmin) ? (xmin) : (x) > (xmax) ? (xmax) : (x))
 
 static inline void nul_terminate(u8* buffer, usize len) {
     buffer[len - 1] = '\0';

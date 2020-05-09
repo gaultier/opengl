@@ -1,5 +1,8 @@
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_scancode.h>
+#include <SDL2/SDL_stdinc.h>
+#include <math.h>
 #define GL_SILENCE_DEPRECATION 1
 
 #include <OpenGL/gl3.h>
@@ -127,84 +130,115 @@ void gl_loop(SDL_Window* window) {
     /* u16 fps_desired = 60; */
     /* u16 frame_rate = 1000 / fps_desired; */
 
-    /* u32 start = 0, end = 0, elapsed_time = 0; */
+    u32 start = 0, end = 0, delta_time = 1;
 
     GLuint vertex_buffer, color_buffer;
     gl_triangle_vertex_buffer(&vertex_buffer, &color_buffer);
 
     SDL_Event event;
 
-    mat4 projection;
-    glm_perspective(degree_to_radian(35.0f), 800 / 600.0, 0.1f, 100.0f,
-                    projection);
     /* glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f, projection); */
-
-    mat4 view;
-    vec3 eye = {4, 3, -3};
-    vec3 center = {0, 0, 0};
-    vec3 up = {0, 1, 0};
-    glm_lookat(eye, center, up, view);
 
     mat4 model;
     glm_mat4_identity(model);
 
-    mat4 mvp;
-    glm_mat4_mul(projection, view, mvp);
-    glm_mat4_mul(mvp, model, mvp);
+    vec3 position = {0, 0, 5};
+    f32 angle_horizontal = 3.14f;
+    f32 angle_vertical = 0;
+    f32 fov = 80;
+    /* f32 speed = 3; */
+    f32 mouse_speed = 0.005f;
 
+    i32 pos_x = 800 / 2.0, pos_y = 600 / 2.0;
+
+    SDL_SetRelativeMouseMode(SDL_FALSE);
     while (true) {
-        /* start = SDL_GetTicks(); */
+        start = SDL_GetTicks();
 
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                return;
+            switch (event.type) {
+                case SDL_QUIT:
+                    return;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                        return;
+                case SDL_MOUSEMOTION:
+                    pos_x = event.motion.x;
+                    pos_y = event.motion.y;
+                    break;
+                default:
+                    break;
             }
-            if (event.type == SDL_KEYDOWN &&
-                event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-                return;
-            }
-
-            glClearColor(0, 0, 0, 1);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glUseProgram(program_id);
-
-            // Pass matrix to glsl
-            const GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
-            glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const f32*)mvp);
-
-            glEnableVertexAttribArray(0);
-            glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-            glVertexAttribPointer(
-                0,  // attribute 0. No particular reason for 0, but must match
-                    // the layout in the shader.
-                3,         // size
-                GL_FLOAT,  // type
-                GL_FALSE,  // normalized?
-                0,         // stride
-                (void*)0   // array buffer offset
-            );
-
-            glEnableVertexAttribArray(1);
-            glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
-            glVertexAttribPointer(
-                1,  // attribute 1. No particular reason for 1, but must match
-                    // the layout in the shader.
-                2,         // size
-                GL_FLOAT,  // type
-                GL_FALSE,  // normalized?
-                0,         // stride
-                (void*)0   // array buffer offset
-            );
-
-            glDrawArrays(GL_TRIANGLES, 0,
-                         12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
-            glDisableVertexAttribArray(1);
-            glDisableVertexAttribArray(0);
-
-            SDL_GL_SwapWindow(window);
         }
-        /* end = SDL_GetTicks(); */
-        /* elapsed_time = end - start; */
+
+        printf("pos_x=%d pos_y=%d\n", pos_x, pos_y);
+
+        /* angle_horizontal += */
+        /*     mouse_speed * delta_time * pos_x;  // * (float)(800 / 2.0 -
+         * pos_x); */
+        /* angle_vertical += */
+        /*     mouse_speed * delta_time * pos_y;  // * (float)(600 / 2.0 -
+         * pos_y); */
+        vec3 direction = {cos(angle_vertical) * sin(angle_horizontal),
+                          sin(angle_vertical),
+                          cos(angle_vertical) * cos(angle_horizontal)};
+        vec3 right = {sin(angle_horizontal - M_PI / 2.0f), 0,
+                      cos(angle_horizontal - M_PI / 2.0f)};
+        vec3 up;
+        glm_vec3_cross(right, direction, up);
+
+        mat4 view;
+        vec3 center;
+        glm_vec3_add(position, direction, center);
+        glm_lookat(position, center, up, view);
+
+        mat4 projection;
+        glm_perspective(degree_to_radian(fov), 800 / 600.0, 0.1f, 100.0f,
+                        projection);
+
+        mat4 mvp;
+        glm_mat4_mul(projection, view, mvp);
+        glm_mat4_mul(mvp, model, mvp);
+
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glUseProgram(program_id);
+
+        // Pass matrix to glsl
+        const GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
+        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const f32*)mvp);
+
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+        glVertexAttribPointer(0,  // attribute 0. No particular reason for 0,
+                                  // but must match the layout in the shader.
+                              3,         // size
+                              GL_FLOAT,  // type
+                              GL_FALSE,  // normalized?
+                              0,         // stride
+                              (void*)0   // array buffer offset
+        );
+
+        glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
+        glVertexAttribPointer(1,  // attribute 1. No particular reason for 1,
+                                  // but must match the layout in the shader.
+                              2,         // size
+                              GL_FLOAT,  // type
+                              GL_FALSE,  // normalized?
+                              0,         // stride
+                              (void*)0   // array buffer offset
+        );
+
+        glDrawArrays(GL_TRIANGLES, 0,
+                     12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(0);
+
+        SDL_GL_SwapWindow(window);
+
+        end = SDL_GetTicks();
+        delta_time = end - start;
 
         /* if (elapsed_time < frame_rate) SDL_Delay(frame_rate - elapsed_time);
          */
