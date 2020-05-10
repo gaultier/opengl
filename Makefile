@@ -12,4 +12,4 @@ opengl: $(C_FILES) $(H_FILES)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(C_FILES) -o opengl
 
 clean:
-	rm -f *.o
+	rm -f *.o opengl
