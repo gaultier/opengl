@@ -1,6 +1,7 @@
 .POSIX:
 
 CFLAGS = -Wall -Wextra -Wpedantic -g -isystem/usr/local/include -ffast-math -std=c99
+CFLAGS_RELEASE = -O2
 LDFLAGS = -lsdl2 -framework OpenGL 
 
 .PHONY: clean
@@ -8,8 +9,11 @@ LDFLAGS = -lsdl2 -framework OpenGL
 C_FILES= $(wildcard *.c)
 H_FILES= $(wildcard *.h)
 
-opengl: $(C_FILES) $(H_FILES)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(C_FILES) -o opengl
+opengl_debug: $(C_FILES) $(H_FILES)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(C_FILES) -o $@
+
+opengl_release: $(C_FILES) $(H_FILES)
+	$(CC) $(CFLAGS) $(CFLAGS_RELEASE) $(LDFLAGS) $(C_FILES) -o $@
 
 clean:
-	rm -f *.o opengl
+	rm -f *.o opengl_debug opengl_release

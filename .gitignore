@@ -1,3 +1,4 @@
 *.o
 *.dSYM
-opengl
+opengl_debug
+opengl_release
