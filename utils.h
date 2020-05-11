@@ -20,6 +20,8 @@ typedef float f32;
 #define CLAMP(x, xmin, xmax) \
     ((x) < (xmin) ? (xmin) : (x) > (xmax) ? (xmax) : (x))
 
+#define ARR_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
 static inline void nul_terminate(u8* buffer, usize len) {
     buffer[len - 1] = '\0';
 }
@@ -31,3 +33,4 @@ static inline void* ogl_malloc(usize size) {
 }
 
 static inline f32 degree_to_radian(f32 degree) { return degree * M_PI / 180; }
+

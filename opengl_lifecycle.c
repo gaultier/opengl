@@ -238,7 +238,7 @@ void gl_loop(SDL_Window* window) {
         // Camera/Positions
         //
 
-        for (u8 i = 0; i < 5; i++) {
+        for (u8 i = 0; i < ARR_SIZE(positions); i++) {
             glm_mat4_identity(model);
 
             glm_translate(model, positions[i]);
