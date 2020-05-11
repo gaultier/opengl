@@ -100,12 +100,12 @@ static void gl_triangle_vertex_buffer(GLuint* vertex_buffer,
 }
 
 static void texture_load(GLuint* texture_id) {
-    const usize data_capacity = 1000 * 1000;
+    const usize data_capacity = 10 * 1000 * 1000;
     u8* data = ogl_malloc(data_capacity);
     usize data_len = 0, width = 0, height = 0, img_size = 0, data_pos = 0;
 
-    bmp_load("resources/uvtemplate.bmp", &data, data_capacity, &data_len,
-             &width, &height, &img_size, &data_pos);
+    bmp_load("resources/crate.bmp", &data, data_capacity, &data_len, &width,
+             &height, &img_size, &data_pos);
     u8* const img_data = data + data_pos;
     printf(
         "BMP: data_len=%zu, width=%zu height=%zu img_size=%zu data_pos=%zu "
@@ -121,6 +121,8 @@ static void texture_load(GLuint* texture_id) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
@@ -144,10 +146,11 @@ void gl_loop(SDL_Window* window) {
 
     f32 angle = 0;
 
-    vec3 positions[] = {
-        {0.0f, 0.0f, 0.0f},     {2.0f, 5.0f, -15.0f}, {-1.5, -2.2, -2.5f},
-        {-3.8f, -2.0f, -12.3f}, {2.4f, -0.4f, -3.5f},
-    };
+    vec3 positions[] = {{0.0f, 0.0f, 0.0f},   {2.0f, 5.0f, -15.0f},
+                        {-1.5, -2.2, -2.5f},  {-3.8f, -2.0f, -9.3f},
+                        {2.4f, -0.4f, -3.5f}, {-1.7f, 3.0f, -7.5f},
+                        {4.3f, -2.0f, -2.5f}, {1.5f, 6.0f, -2.5f},
+                        {1.5f, 5.2f, -1.5f},  {-1.3f, 3.0f, -1.5f}};
 
     mat4 mvp, model, view, projection;
 

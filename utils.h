@@ -31,6 +31,3 @@ static inline void* ogl_malloc(usize size) {
     if (!mem) exit(ENOMEM);
     return mem;
 }
-
-static inline f32 degree_to_radian(f32 degree) { return degree * M_PI / 180; }
-
