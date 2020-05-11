@@ -144,9 +144,28 @@ void gl_loop(SDL_Window* window) {
 
     f32 angle = 0;
 
+    vec3 positions[] = {
+        {0.0f, 0.0f, 0.0f},     {2.0f, 5.0f, -15.0f}, {-1.5, -2.2, -2.5f},
+        {-3.8f, -2.0f, -12.3f}, {2.4f, -0.4f, -3.5f},
+    };
+
+    mat4 mvp, model, view, projection;
+
+    // Do not depend on the render loop
+    glm_mat4_identity(view);
+    vec3 translation = {0, 0, -10.0f};
+    glm_translate(view, translation);
+
+    glm_perspective(glm_rad(45.0f), 1024.0f / 768, 0.1f, 100.0f, projection);
+
+    glm_mat4_identity(mvp);
+
     while (true) {
         start = SDL_GetTicks();
 
+        //
+        // Input
+        //
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_QUIT:
@@ -208,55 +227,59 @@ void gl_loop(SDL_Window* window) {
         }
         angle += 0.01;
 
-        mat4 mvp, model, view, projection;
-
-        vec3 rotation_axis = {0.5f, 1.0f, 0.0f};
-        glm_mat4_identity(model);
-
-        glm_rotate(model, angle * glm_rad(-50.0f), rotation_axis);
-
-        glm_mat4_identity(view);
-        vec3 translation = {0, 0, -10.0f};
-        glm_translate(view, translation);
-
-        glm_perspective(glm_rad(45.0f), 1024.0f / 768, 0.1f, 100.0f,
-                        projection);
-
-        glm_mat4_mul(projection, view, mvp);
-        glm_mat4_mul(mvp, model, mvp);
-
+        //
+        // Rendering
+        //
         glClearColor(0, 0, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(program_id);
 
-        // Pass matrix to glsl
-        const GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
-        glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const f32*)mvp);
+        //
+        // Camera/Positions
+        //
 
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-        glVertexAttribPointer(0,  // attribute 0. No particular reason for 0,
-                                  // but must match the layout in the shader.
-                              3,         // size
-                              GL_FLOAT,  // type
-                              GL_FALSE,  // normalized?
-                              0,         // stride
-                              (void*)0   // array buffer offset
-        );
+        for (u8 i = 0; i < 5; i++) {
+            glm_mat4_identity(model);
 
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
-        glVertexAttribPointer(1,  // attribute 1. No particular reason for 1,
-                                  // but must match the layout in the shader.
-                              2,         // size
-                              GL_FLOAT,  // type
-                              GL_FALSE,  // normalized?
-                              0,         // stride
-                              (void*)0   // array buffer offset
-        );
+            glm_translate(model, positions[i]);
 
-        glDrawArrays(GL_TRIANGLES, 0,
-                     12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
+            vec3 rotation_axis = {1.0f, 0.3f, 0.5f};
+            glm_rotate(model, glm_rad(i * angle * 20.0f), rotation_axis);
+
+            glm_mat4_mul(projection, view, mvp);
+            glm_mat4_mul(mvp, model, mvp);
+
+            // Pass matrix to glsl
+            const GLuint matrix_id = glGetUniformLocation(program_id, "MVP");
+            glUniformMatrix4fv(matrix_id, 1, GL_FALSE, (const f32*)mvp);
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+            glVertexAttribPointer(
+                0,  // attribute 0. No particular reason for 0,
+                    // but must match the layout in the shader.
+                3,         // size
+                GL_FLOAT,  // type
+                GL_FALSE,  // normalized?
+                0,         // stride
+                (void*)0   // array buffer offset
+            );
+
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, color_buffer);
+            glVertexAttribPointer(
+                1,  // attribute 1. No particular reason for 1,
+                    // but must match the layout in the shader.
+                2,         // size
+                GL_FLOAT,  // type
+                GL_FALSE,  // normalized?
+                0,         // stride
+                (void*)0   // array buffer offset
+            );
+
+            // Draw
+            glDrawArrays(GL_TRIANGLES, 0,
+                         12 * 3);  // 6 squares = 12 triangles = 12*3 vertices
+        }
         glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(0);
 
