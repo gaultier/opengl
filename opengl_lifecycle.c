@@ -137,19 +137,7 @@ void gl_loop(SDL_Window* window) {
 
     SDL_Event event;
 
-    /* vec3 position = {0, 0, 0}; */
-    /* vec3 direction = {-1, 0, 0}; */
-    /* vec3 right = {8, 1, 1}; */
-    /* f32 angle_horizontal = 3.0; */
-    /* f32 angle_vertical = .4; */
-    /* f32 fov = 80; */
-    /* f32 speed = 0.01; */
-    /* f32 mouse_speed = 0.005f; */
-
-    /* i32 pos_x = 1024 / 2.0, pos_y = 768 / 2.0; */
-
     SDL_SetRelativeMouseMode(SDL_FALSE);
-    /* SDL_WarpMouseInWindow(window, pos_x, pos_y); */
 
     const u8 fps_desired = 60;
     u8 frame_rate = 1000 / fps_desired;
