@@ -244,7 +244,8 @@ void gl_loop(SDL_Window* window) {
             glm_translate(model, positions[i]);
 
             vec3 rotation_axis = {1.0f, 0.3f, 0.5f};
-            glm_rotate(model, glm_rad(i * angle * 20.0f), rotation_axis);
+            glm_rotate(model, glm_rad((0.8f + i) * angle * 20.0f),
+                       rotation_axis);
 
             glm_mat4_mul(projection, view, mvp);
             glm_mat4_mul(mvp, model, mvp);
