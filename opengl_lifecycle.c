@@ -2,6 +2,7 @@
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_timer.h>
 #include <math.h>
 #define GL_SILENCE_DEPRECATION 1
 
@@ -128,8 +129,6 @@ void gl_loop(SDL_Window* window) {
     texture_load(&texture_id);
 
     const GLuint program_id = gl_scene_setup();
-    /* u16 fps_desired = 60; */
-    /* u16 frame_rate = 1000 / fps_desired; */
 
     u32 start = 0, end = 0, delta_time = 1;
 
@@ -138,24 +137,24 @@ void gl_loop(SDL_Window* window) {
 
     SDL_Event event;
 
-    /* glm_ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f, projection); */
-
-    mat4 model;
-    glm_mat4_identity(model);
-
-    vec3 position = {0, -1, 5};
-    vec3 direction = {-3, -2, 4};
-    vec3 right = {8, 1, 1};
-    f32 angle_horizontal = 3.0;
-    f32 angle_vertical = .4;
-    f32 fov = 80;
-    f32 speed = 0.01;
+    /* vec3 position = {0, 0, 0}; */
+    /* vec3 direction = {-1, 0, 0}; */
+    /* vec3 right = {8, 1, 1}; */
+    /* f32 angle_horizontal = 3.0; */
+    /* f32 angle_vertical = .4; */
+    /* f32 fov = 80; */
+    /* f32 speed = 0.01; */
     /* f32 mouse_speed = 0.005f; */
 
-    i32 pos_x = 1024 / 2.0, pos_y = 768 / 2.0;
+    /* i32 pos_x = 1024 / 2.0, pos_y = 768 / 2.0; */
 
     SDL_SetRelativeMouseMode(SDL_FALSE);
-    SDL_WarpMouseInWindow(window, pos_x, pos_y);
+    /* SDL_WarpMouseInWindow(window, pos_x, pos_y); */
+
+    const u8 fps_desired = 60;
+    u8 frame_rate = 1000 / fps_desired;
+
+    f32 angle = 0;
 
     while (true) {
         start = SDL_GetTicks();
@@ -168,82 +167,73 @@ void gl_loop(SDL_Window* window) {
                     switch (event.key.keysym.scancode) {
                         case SDL_SCANCODE_ESCAPE:
                             return;
-                        case SDL_SCANCODE_UP: {
-                            vec3 mul_factor = {delta_time * speed,
-                                               delta_time * speed,
-                                               delta_time * speed};
-                            vec3 position_rel;
-                            glm_vec3_mul(direction, mul_factor, position_rel);
-                            glm_vec3_add(position, position_rel, position);
-                            break;
-                        }
-                        case SDL_SCANCODE_DOWN: {
-                            vec3 mul_factor = {delta_time * speed,
-                                               delta_time * speed,
-                                               delta_time * speed};
-                            vec3 position_rel;
-                            glm_vec3_mul(direction, mul_factor, position_rel);
-                            glm_vec3_sub(position, position_rel, position);
-                            break;
-                        }
+                        /* case SDL_SCANCODE_UP: { */
+                        /*     vec3 mul_factor = {delta_time * speed, */
+                        /*                        delta_time * speed, */
+                        /*                        delta_time * speed}; */
+                        /*     vec3 position_rel; */
+                        /*     glm_vec3_mul(direction, mul_factor,
+                         * position_rel); */
+                        /*     glm_vec3_add(position, position_rel, position);
+                         */
+                        /*     break; */
+                        /* } */
+                        /* case SDL_SCANCODE_DOWN: { */
+                        /*     vec3 mul_factor = {delta_time * speed, */
+                        /*                        delta_time * speed, */
+                        /*                        delta_time * speed}; */
+                        /*     vec3 position_rel; */
+                        /*     glm_vec3_mul(direction, mul_factor,
+                         * position_rel); */
+                        /*     glm_vec3_sub(position, position_rel, position);
+                         */
+                        /*     break; */
+                        /* } */
                         case SDL_SCANCODE_LEFT: {
-                            vec3 mul_factor = {delta_time * speed,
-                                               delta_time * speed,
-                                               delta_time * speed};
-                            vec3 position_rel;
-                            glm_vec3_mul(right, mul_factor, position_rel);
-                            glm_vec3_add(position, position_rel, position);
+                            angle += 0.2;
                             break;
                         }
-                        case SDL_SCANCODE_RIGHT: {
-                            vec3 mul_factor = {delta_time * speed,
-                                               delta_time * speed,
-                                               delta_time * speed};
-                            vec3 position_rel;
-                            glm_vec3_mul(right, mul_factor, position_rel);
-                            glm_vec3_sub(position, position_rel, position);
-                            break;
-                        }
+                        /* case SDL_SCANCODE_RIGHT: { */
+                        /*     vec3 mul_factor = {delta_time * speed, */
+                        /*                        delta_time * speed, */
+                        /*                        delta_time * speed}; */
+                        /*     vec3 position_rel; */
+                        /*     glm_vec3_mul(right, mul_factor, position_rel); */
+                        /*     glm_vec3_sub(position, position_rel, position);
+                         */
+                        /*     break; */
+                        /* } */
                         default:
                             break;
                     }
                     break;
-                case SDL_MOUSEWHEEL:
-                    fov += (event.wheel.y > 0) ? 1 : -1;
-                    break;
-                case SDL_MOUSEMOTION:
-                    pos_x = event.motion.x;
-                    pos_y = event.motion.y;
-                    break;
+                /* case SDL_MOUSEWHEEL: */
+                /*     fov += (event.wheel.y > 0) ? 1 : -1; */
+                /*     break; */
+                /* case SDL_MOUSEMOTION: */
+                /*     pos_x = event.motion.x; */
+                /*     pos_y = event.motion.y; */
+                /*     break; */
                 default:
                     break;
             }
         }
+        angle += 0.01;
 
-        angle_horizontal += (float)delta_time * (float)pos_x *
-                            (float)(1024 / 2.0 - pos_x) / 1000000;
-        angle_vertical += (float)delta_time * (float)pos_y *
-                          (float)(768 / 2.0 - pos_y) / 1000000;
+        mat4 mvp, model, view, projection;
 
-        direction[0] = cos(angle_vertical) * sin(angle_horizontal);
-        direction[1] = sin(angle_vertical);
-        direction[2] = cos(angle_vertical) * cos(angle_horizontal);
-        right[0] = sin(angle_horizontal - M_PI / 2.0f);
-        right[2] = cos(angle_horizontal - M_PI / 2.0f);
+        vec3 rotation_axis = {0.5f, 1.0f, 0.0f};
+        glm_mat4_identity(model);
 
-        vec3 up;
-        glm_vec3_cross(right, direction, up);
+        glm_rotate(model, angle * glm_rad(-50.0f), rotation_axis);
 
-        vec3 center;
-        glm_vec3_add(position, direction, center);
-        mat4 view;
-        glm_lookat(position, center, up, view);
+        glm_mat4_identity(view);
+        vec3 translation = {0, 0, -10.0f};
+        glm_translate(view, translation);
 
-        mat4 projection;
-        glm_perspective(degree_to_radian(fov), 1024 / 768.0, 0.1f, 100.0f,
+        glm_perspective(glm_rad(45.0f), 1024.0f / 768, 0.1f, 100.0f,
                         projection);
 
-        mat4 mvp;
         glm_mat4_mul(projection, view, mvp);
         glm_mat4_mul(mvp, model, mvp);
 
@@ -287,8 +277,6 @@ void gl_loop(SDL_Window* window) {
         end = SDL_GetTicks();
         delta_time = end - start;
 
-        /* if (elapsed_time < frame_rate) SDL_Delay(frame_rate - elapsed_time);
-         */
-        SDL_WarpMouseInWindow(window, 1024 / 2.0, 768 / 2.0);
+        if (delta_time < frame_rate) SDL_Delay(frame_rate - delta_time);
     }
 }
