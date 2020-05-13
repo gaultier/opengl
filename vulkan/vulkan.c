@@ -2,6 +2,7 @@
 #include <SDL2/SDL_error.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_vulkan.h>
+#include <stdio.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
@@ -76,4 +77,39 @@ int main() {
         fprintf(stderr, "vkCreateInstance failed: %d\n", err);
         exit(1);
     }
+
+    //
+    // Create Vulkan surface
+    //
+    VkSurfaceKHR surface;
+    if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
+        fprintf(stderr, "SDL_Vulkan_CreateSurface failed: %s\n",
+                SDL_GetError());
+        exit(1);
+    }
+
+    //
+    // Create Vulkan physical device
+    //
+    VkPhysicalDevice gpu;
+    u32 gpu_count;
+    err = vkEnumeratePhysicalDevices(instance, &gpu_count, NULL);
+    if (err) {
+        fprintf(stderr, "vkEnumeratePhysicalDevices failed: %d\n", err);
+        exit(1);
+    }
+
+    if (gpu_count == 0) {
+        fprintf(stderr, "No GPUs detected\n");
+        gpu = VK_NULL_HANDLE;
+    } else {
+        VkPhysicalDevice gpus[gpu_count];
+        err = vkEnumeratePhysicalDevices(instance, &gpu_count, gpus);
+        if (err) {
+            fprintf(stderr, "vkEnumeratePhysicalDevices (2) failed: %d\n", err);
+            exit(1);
+        }
+        gpu = gpus[0];
+    }
+    printf("GPUs detected: %u\n", gpu_count);
 }
