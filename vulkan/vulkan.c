@@ -7,6 +7,8 @@
 
 #include "../utils.h"
 
+#define MAX_EXTENSIONS 64
+
 int main() {
     //
     // SDL init
@@ -36,7 +38,7 @@ int main() {
     // Get Vulkan extensions
     //
     u32 extension_count = 0;
-    const char* extension_names[64] = {0};
+    const char* extension_names[MAX_EXTENSIONS] = {0};
     extension_names[extension_count++] = VK_KHR_SURFACE_EXTENSION_NAME;
 
     const VkApplicationInfo app_info = {
