@@ -8,13 +8,17 @@
 #include "../utils.h"
 
 int main() {
+    //
+    // SDL init
+    //
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to initialize SDL: %s",
-                     SDL_GetError());
+        fprintf(stderr, "Unable to initialize SDL: %s", SDL_GetError());
         exit(1);
     }
 
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    //
+    // Create window
+    //
     u32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN;
     const char window_title[] = "hello";
     const u16 window_width = 1024;
@@ -24,29 +28,43 @@ int main() {
                                           window_height, flags);
 
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Unable to create window: %s",
-                     SDL_GetError());
+        fprintf(stderr, "Unable to create window: %s", SDL_GetError());
         exit(1);
     }
 
+    //
+    // Get Vulkan extensions
+    //
     u32 extension_count = 0;
     const char* extension_names[64] = {0};
     extension_names[extension_count++] = VK_KHR_SURFACE_EXTENSION_NAME;
 
-    const VkApplicationInfo app = {.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-                                   .pApplicationName = "hello triangle",
-                                   .apiVersion = VK_MAKE_VERSION(0, 0, 1)};
+    const VkApplicationInfo app_info = {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pApplicationName = "hello triangle",
+        .apiVersion = VK_MAKE_VERSION(0, 0, 1)};
 
-    u32 c = 64 - extension_count;
-    if (!SDL_Vulkan_GetInstanceExtensions(window, &c,
+    u32 detected_extension_count = 64 - extension_count;
+    if (!SDL_Vulkan_GetInstanceExtensions(window, &detected_extension_count,
                                           &extension_names[extension_count])) {
         fprintf(stderr, "SDL_GetVulkanInstanceExtensions failed: %s\n",
                 SDL_GetError());
         exit(1);
     }
+    extension_count += detected_extension_count;
 
-    printf("Instance extensions: count=%u\n", c);
-    for (u32 i = 0; i < c; i++) {
-        printf("Extension: %s\n", extension_names[c]);
+    printf("Instance extensions: count=%u\n", extension_count);
+    for (u32 i = 0; i < extension_count; i++) {
+        printf("Extension: %s\n", extension_names[i]);
     }
+
+    //
+    // Create Vulkan instance
+    //
+    VkInstanceCreateInfo instance_create_info = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo = &app_info,
+        .enabledExtensionCount = extension_count,
+        .ppEnabledExtensionNames = extension_names,
+    };
 }
