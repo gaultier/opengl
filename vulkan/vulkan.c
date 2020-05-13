@@ -112,4 +112,25 @@ int main() {
         gpu = gpus[0];
     }
     printf("GPUs detected: %u\n", gpu_count);
+
+    //
+    // Get information about the device
+    //
+    VkPhysicalDeviceProperties device_properties;
+    vkGetPhysicalDeviceProperties(gpu, &device_properties);
+
+    VkPhysicalDeviceFeatures device_features;
+    vkGetPhysicalDeviceFeatures(gpu, &device_features);
+
+    printf("GPU information: name=%s driver_version=%u\n",
+           device_properties.deviceName, device_properties.driverVersion);
+
+    VkDevice device;
+    VkQueue queue;
+    VkCommandPool command_pool;
+
+    u32 queue_family_index = UINT32_MAX;
+    u32 queue_count;
+
+    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_count, NULL);
 }
