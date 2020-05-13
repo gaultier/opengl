@@ -126,7 +126,7 @@ int main() {
            device_properties.deviceName, device_properties.driverVersion);
 
     //
-    // Queue families
+    // Create command pool & queue
     //
     VkDevice device;
     VkQueue queue;
@@ -198,7 +198,7 @@ int main() {
             .queueFamilyIndex = queue_family_index,
             .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT};
 
-        err = vkCreateCommandPool(device, command_pool_create_info, NULL,
+        err = vkCreateCommandPool(device, &command_pool_create_info, NULL,
                                   &command_pool);
 
         if (err) {
@@ -206,4 +206,47 @@ int main() {
             exit(1);
         }
     }
+
+    //
+    // Get color format
+    //
+    VkFormat format;
+    VkColorSpaceKHR color_space;
+    u32 format_count;
+
+    err =
+        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count, NULL);
+    if (err) {
+        fprintf(stderr, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: %d\n",
+                err);
+        exit(1);
+    }
+
+    printf("Found %d formats\n", format_count);
+
+    VkSurfaceFormatKHR formats[format_count];
+
+    err = vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count,
+                                               formats);
+    if (err) {
+        fprintf(stderr, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: %d\n",
+                err);
+        exit(1);
+    }
+
+    if (format_count == 0) {
+        fprintf(stderr, "Found zero format\n");
+        exit(1);
+    }
+
+    if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
+        printf(
+            "Found only one format which is undefined,defaulting to "
+            "VK_FORMAT_B8G8R8A8_SRGB\n");
+        format = VK_FORMAT_B8G8R8A8_SRGB;
+    } else {
+        format = formats[0].format;
+    }
+
+    printf("Format: %d\n", format);
 }
