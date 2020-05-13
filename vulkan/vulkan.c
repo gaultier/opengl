@@ -248,5 +248,7 @@ int main() {
         format = formats[0].format;
     }
 
+    color_space = formats[0].colorSpace;
     printf("Format: %d\n", format);
+    printf("Color space: %d\n", color_space);
 }
