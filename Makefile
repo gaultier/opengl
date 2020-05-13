@@ -16,9 +16,5 @@ opengl_debug: $(C_FILES) $(H_FILES)
 opengl_release: $(C_FILES) $(H_FILES)
 	$(CC) $(CFLAGS) $(CFLAGS_RELEASE) $(LDFLAGS) $(LIBS) $(C_FILES) -o $@
 
-
-vulkan/vulkan_debug: vulkan/vulkan.c
-	$(CC) $(CFLAGS) $(CFLAGS_RELEASE) $(LDFLAGS) -lsdl2 $^ -o $@
-
 clean:
-	rm -f *.o opengl_debug opengl_release vulkan_debug
+	rm -f *.o opengl_debug opengl_release 
