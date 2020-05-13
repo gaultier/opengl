@@ -3,7 +3,7 @@
 CFLAGS = -Wall -Wextra -Wpedantic -g -isystem/usr/local/include -ffast-math -std=c99
 CFLAGS_RELEASE = -O2
 LDFLAGS = 
-LIBS = -lsdl2
+LIBS = -lsdl2 -lvulkan
 
 .PHONY: clean
 
