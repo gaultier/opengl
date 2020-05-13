@@ -6,8 +6,6 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
-#include <cstdint>
-
 #include "../utils.h"
 
 #define MAX_EXTENSIONS 64
@@ -163,5 +161,33 @@ int main() {
     if (queue_family_index == UINT32_MAX) {
         fprintf(stderr, "No proper queue family found\n");
         exit(1);
+    }
+
+    {
+        u32 extension_count = 0;
+
+        const char* extension_names[MAX_EXTENSIONS];
+        extension_names[extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
+        f32 queue_priorities[1] = {0.0};
+        const VkDeviceQueueCreateInfo queue_info = {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+            .queueFamilyIndex = queue_family_index,
+            .queueCount = 1,
+            .pQueuePriorities = queue_priorities};
+
+        VkDeviceCreateInfo device_create_info = {
+            .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+            .queueCreateInfoCount = 1,
+            .pQueueCreateInfos = &queue_info,
+            .enabledExtensionCount = extension_count,
+            .ppEnabledExtensionNames = extension_names,
+        };
+
+        err = vkCreateDevice(gpu, &device_create_info, NULL, &device);
+        if (err) {
+            fprintf(stderr, "vkCreateDevice failed: %d\n", err);
+            exit(1);
+        }
     }
 }
