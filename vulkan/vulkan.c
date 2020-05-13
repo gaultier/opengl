@@ -125,6 +125,9 @@ int main() {
     printf("GPU information: name=%s driver_version=%u\n",
            device_properties.deviceName, device_properties.driverVersion);
 
+    //
+    // Queue families
+    //
     VkDevice device;
     VkQueue queue;
     VkCommandPool command_pool;
@@ -133,4 +136,14 @@ int main() {
     u32 queue_count;
 
     vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_count, NULL);
+    VkQueueFamilyProperties queue_properties[queue_count];
+    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_count,
+
+                                             queue_properties);
+
+    if (queue_count == 0) {
+        fprintf(stderr, "No queue family properties were found\n");
+        exit(1);
+    }
+    printf("Found %u family properties\n", queue_count);
 }
