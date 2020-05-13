@@ -6,6 +6,8 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
+#include <cstdint>
+
 #include "../utils.h"
 
 #define MAX_EXTENSIONS 64
@@ -146,4 +148,20 @@ int main() {
         exit(1);
     }
     printf("Found %u family properties\n", queue_count);
+
+    for (u32 i = 0; i < queue_count; i++) {
+        VkBool32 supported;
+        vkGetPhysicalDeviceSurfaceSupportKHR(gpu, i, surface, &supported);
+
+        if (supported &&
+            (queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+            queue_family_index = i;
+            break;
+        }
+    }
+
+    if (queue_family_index == UINT32_MAX) {
+        fprintf(stderr, "No proper queue family found\n");
+        exit(1);
+    }
 }
