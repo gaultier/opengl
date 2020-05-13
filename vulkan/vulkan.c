@@ -189,5 +189,21 @@ int main() {
             fprintf(stderr, "vkCreateDevice failed: %d\n", err);
             exit(1);
         }
+
+        vkGetDeviceQueue(device, queue_family_index, 0, &queue);
+
+        const VkCommandPoolCreateInfo command_pool_create_info = {
+
+            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .queueFamilyIndex = queue_family_index,
+            .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT};
+
+        err = vkCreateCommandPool(device, command_pool_create_info, NULL,
+                                  &command_pool);
+
+        if (err) {
+            fprintf(stderr, "vkCreateCommandPool failed: %d\n", err);
+            exit(1);
+        }
     }
 }
