@@ -69,4 +69,11 @@ int main() {
         .enabledExtensionCount = extension_count,
         .ppEnabledExtensionNames = extension_names,
     };
+
+    VkInstance instance;
+    VkResult err = vkCreateInstance(&instance_create_info, NULL, &instance);
+    if (err) {
+        fprintf(stderr, "vkCreateInstance failed: %d\n", err);
+        exit(1);
+    }
 }
