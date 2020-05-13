@@ -10,8 +10,8 @@ LIBS = -lsdl2
 C_FILES= $(wildcard *.c)
 H_FILES= $(wildcard *.h)
 
-vulkan/vulkan_debug: vulkan/vulkan.c
-	$(CC) $(CFLAGS) $(CFLAGS_RELEASE) $(LDFLAGS) -lsdl2 $^ -o $@
+vulkan_debug: vulkan.c
+	$(CC) $(CFLAGS) $(CFLAGS_RELEASE) $(LDFLAGS) $(LIBS) $^ -o $@
 
 clean:
 	rm vulkan_debug

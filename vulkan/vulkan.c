@@ -44,4 +44,9 @@ int main() {
                 SDL_GetError());
         exit(1);
     }
+
+    printf("Instance extensions: count=%u\n", c);
+    for (u32 i = 0; i < c; i++) {
+        printf("Extension: %s\n", extension_names[c]);
+    }
 }
