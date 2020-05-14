@@ -107,7 +107,7 @@ int main() {
         .enabledExtensionCount = extension_count,
         .ppEnabledExtensionNames = extension_names,
         .enabledLayerCount = debug ? 1 : 0,
-        .ppEnabledLayerNames = debug ? validation_layers: NULL};
+        .ppEnabledLayerNames = debug ? validation_layers : NULL};
 
     err = vkCreateInstance(&instance_create_info, NULL, &instance);
     if (err) {
@@ -786,9 +786,6 @@ int main() {
         /* } else */
         /*     assert(!err); */
 
-        /* err = vkQueueWaitIdle(queue); */
-        /* assert(err == VK_SUCCESS); */
-
         u32 current_image;
         vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
                               image_available_semaphore, VK_NULL_HANDLE,
@@ -820,5 +817,7 @@ int main() {
         };
 
         vkQueuePresentKHR(queue, &present_info);
+        err = vkQueueWaitIdle(queue);
+        assert(err == VK_SUCCESS);
     }
 }
