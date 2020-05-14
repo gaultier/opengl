@@ -13,6 +13,7 @@
 #include "../utils.h"
 
 #define MAX_EXTENSIONS 64
+#define MAX_LAYERS 64
 
 int main() {
     //
@@ -70,6 +71,34 @@ int main() {
             printf("Extension: %s\n", extension_names[i]);
         }
 
+        ///
+        // Get validation layers
+        //
+        VkLayerProperties layers[MAX_LAYERS];
+        u32 layer_count;
+        const char* validation_layers[] = {"VK_LAYER_KHRONOS_validation"};
+        {
+            vkEnumerateInstanceLayerProperties(&layer_count, NULL);
+            assert(layer_count < MAX_LAYERS);
+            printf("Available layers: %u\n", layer_count);
+
+            vkEnumerateInstanceLayerProperties(&layer_count, layers);
+
+            _Bool found = false;
+            for (u32 i = 0; i < layer_count; i++) {
+                printf("Available layer: %s\n", layers[i].layerName);
+
+                if (strcmp(validation_layers[0], layers[i].layerName) == 0) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                fprintf(stderr, "Validation layer not found\n");
+            }
+            printf("Validation layer found\n");
+        }
+
         //
         // Create Vulkan instance
         //
@@ -78,7 +107,8 @@ int main() {
             .pApplicationInfo = &app_info,
             .enabledExtensionCount = extension_count,
             .ppEnabledExtensionNames = extension_names,
-        };
+            .enabledLayerCount = 1,
+            .ppEnabledLayerNames = validation_layers};
 
         err = vkCreateInstance(&instance_create_info, NULL, &instance);
         if (err) {
