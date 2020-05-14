@@ -14,6 +14,7 @@ int main() {
     //
     // SDL init
     //
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "Unable to initialize SDL: %s", SDL_GetError());
         exit(1);
@@ -251,4 +252,22 @@ int main() {
     color_space = formats[0].colorSpace;
     printf("Format: %d\n", format);
     printf("Color space: %d\n", color_space);
+
+    //
+    // Command buffer
+    //
+    VkCommandBuffer command_buffer;
+    {
+        const VkCommandBufferAllocateInfo allocate_info = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .commandPool = command_pool,
+            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1};
+
+        err = vkAllocateCommandBuffers(device, &allocate_info, &command_buffer);
+        if (err) {
+            fprintf(stderr, "vkAllocateCommandBuffers failed: %d\n", err);
+            exit(1);
+        }
+    }
 }
