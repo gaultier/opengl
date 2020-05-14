@@ -348,6 +348,7 @@ int main() {
             .pName = "main"  // Entrypoint function
         };
 
+        // FIXME: Use
         VkPipelineShaderStageCreateInfo shader_stages[] = {
             vert_shader_stage_info,
             frag_shader_stage_info,
@@ -413,6 +414,47 @@ int main() {
         }
     }
     printf("Swapchain image count: %u\n", swapchain_image_count);
+
+    //
+    // Fixed functions
+    //
+    {
+        VkPipelineVertexInputStateCreateInfo vertex_input_info = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        };
+
+        VkPipelineInputAssemblyStateCreateInfo input_assembly = {
+            .sType =
+                VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+            .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            .primitiveRestartEnable = VK_FALSE,
+        };
+
+        VkViewport viewport = {
+            .x = 0.0f,
+            .y = 0.0f,
+            .width = swapchain_extent.width,
+            .height = swapchain_extent.height,
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f,
+        };
+
+        VkRect2D scissor = {.extent = swapchain_extent};
+
+        VkPipelineViewportStateCreateInfo viewport_state = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+            .viewportCount = 1,
+            .pViewports = &viewport,
+            .scissorCount = 1,
+            .pScissors = &scissor,
+        };
+
+        VkPipelineRasterizationStateCreateInfo rasterizer = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+            .polygonMode = VK_POLYGON_MODE_FILL,
+            .lineWidth = 1.0f,
+        };
+    }
 
     struct {
         VkImage image;
