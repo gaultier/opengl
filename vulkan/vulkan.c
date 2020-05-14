@@ -615,7 +615,7 @@ int main() {
             assert(!err);
 
         err = vkQueueWaitIdle(queue);
-        assert(err = VK_SUCCESS);
+        assert(err == VK_SUCCESS);
 
         vkDestroySemaphore(device, present_complete_semaphore, NULL);
     }
