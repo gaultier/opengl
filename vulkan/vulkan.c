@@ -370,7 +370,41 @@ int main() {
             fprintf(stderr, "vkGetSwapchainImagesKHR (2) failed: %d\n", err);
             exit(1);
         }
+
+        for (u32 i = 0; i < swapchain_image_count; i++)
+            buffers[i].image = swapchain_images[i];
     }
+
     for (u32 i = 0; i < swapchain_image_count; i++) {
+        VkImageViewCreateInfo color_attachment_view = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .format = format,
+            .components =
+                {
+                    .r = VK_COMPONENT_SWIZZLE_R,
+                    .g = VK_COMPONENT_SWIZZLE_G,
+                    .b = VK_COMPONENT_SWIZZLE_B,
+                    .a = VK_COMPONENT_SWIZZLE_A,
+                },
+            .subresourceRange =
+                {
+                    .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .baseMipLevel = 0,
+                    .levelCount = 1,
+                    .baseArrayLayer = 0,
+                    .layerCount = 1,
+                },
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .image = buffers[i].image,
+        };
+
+        err = vkCreateImageView(device, &color_attachment_view, NULL,
+                                &buffers[i].view);
+
+        if (err) {
+            fprintf(stderr, "vkCreateImageView (%u) failed: %d\n", i, err);
+            exit(1);
+        }
+        printf("Initialized image view #%u\n", i);
     }
 }
