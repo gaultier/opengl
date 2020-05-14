@@ -568,12 +568,20 @@ int main() {
         .pColorAttachments = &color_reference,
     };
 
+    const VkSubpassDependency dependency = {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT};
+
     const VkRenderPassCreateInfo render_pass_info = {
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .attachmentCount = 1,
         .pAttachments = attachments,
         .subpassCount = 1,
         .pSubpasses = &subpass,
+        .dependencyCount = 1,
+        .pDependencies = &dependency,
     };
 
     VkRenderPass render_pass;
@@ -785,5 +793,27 @@ int main() {
         vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
                               image_available_semaphore, VK_NULL_HANDLE,
                               &current_image);
+
+        VkPipelineStageFlags wait_stages =
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        VkSubmitInfo submit_info = {
+            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &image_available_semaphore,
+            .pWaitDstStageMask = &wait_stages,
+            .commandBufferCount = 1,
+            .pCommandBuffers = &command_buffers[current_image],
+            .signalSemaphoreCount = 1,
+            .pSignalSemaphores = &render_finished_semaphore,
+        };
+
+        err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+        assert(!err);
+
+        VkPresentInfoKHR present_info = {
+            .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &render_finished_semaphore,
+        };
     }
 }
