@@ -15,6 +15,8 @@
 #define MAX_EXTENSIONS 64
 #define MAX_LAYERS 64
 
+static const u32 MAX_FRAMES_IN_FLIGHT = 2;
+
 int main() {
     //
     // SDL init
@@ -479,13 +481,6 @@ int main() {
         .pAttachments = &color_blend_attachment,
     };
 
-    VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT,
-                                       VK_DYNAMIC_STATE_LINE_WIDTH};
-    VkPipelineDynamicStateCreateInfo dynamic_state = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
-        .dynamicStateCount = 2,
-        .pDynamicStates = dynamic_states};
-
     VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     };
@@ -651,18 +646,21 @@ int main() {
     //
     // Create semaphores
     //
-    VkSemaphore image_available_semaphore, render_finished_semaphore;
+    VkSemaphore image_available_semaphore[MAX_FRAMES_IN_FLIGHT],
+        render_finished_semaphore[MAX_FRAMES_IN_FLIGHT];
     VkSemaphoreCreateInfo semaphore_create_info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
     };
 
-    err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
-                            &image_available_semaphore);
-    assert(!err);
+    for (u32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                &image_available_semaphore[i]);
+        assert(!err);
 
-    err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
-                            &render_finished_semaphore);
-    assert(!err);
+        err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                &render_finished_semaphore[i]);
+        assert(!err);
+    }
 
     //
     // Command buffers
@@ -712,6 +710,7 @@ int main() {
     //
     // Main loop
     //
+    usize current_frame = 0;
     for (;;) {
         // Inputs
         {
@@ -736,69 +735,22 @@ int main() {
         //
         // Draw
         //
-
-        /* VkImageMemoryBarrier present_barrier = { */
-        /*     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, */
-        /*     .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, */
-        /*     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT, */
-        /*     .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, */
-        /*     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, */
-        /*     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, */
-        /*     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, */
-        /*     .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}, */
-        /*     .image = buffers[current_buffer].image, */
-        /* }; */
-
-        /* vkCmdPipelineBarrier(command_buffer,
-         * VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, */
-        /*                      VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0,
-         * NULL, */
-        /*                      0, NULL, 1, &present_barrier); */
-
-        /* VkPipelineStageFlags pipe_stage_flags = */
-        /*     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; */
-
-        /* VkSubmitInfo submit_info = { */
-        /*     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO, */
-        /*     .commandBufferCount = 1, */
-        /*     .pCommandBuffers = &buffers[current_buffer].command, */
-        /*     .waitSemaphoreCount = 1, */
-        /*     .pWaitSemaphores = &image_available_semaphore, */
-        /*     .pWaitDstStageMask = &pipe_stage_flags, */
-        /* }; */
-
-        /* err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE); */
-        /* assert(!err); */
-
-        /* VkPresentInfoKHR present = {.sType =
-         * VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, */
-        /*                             .swapchainCount = 1, */
-        /*                             .pSwapchains = &swapchain, */
-        /*                             .pImageIndices = &current_buffer}; */
-
-        /* err = vkQueuePresentKHR(queue, &present); */
-
-        /* if (err == VK_SUBOPTIMAL_KHR) { */
-        /*     fprintf(stderr, "Warning: suboptimal present\n"); */
-        /* } else */
-        /*     assert(!err); */
-
         u32 current_image;
         vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
-                              image_available_semaphore, VK_NULL_HANDLE,
-                              &current_image);
+                              image_available_semaphore[current_frame],
+                              VK_NULL_HANDLE, &current_image);
 
         VkPipelineStageFlags wait_stages =
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         VkSubmitInfo submit_info = {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .waitSemaphoreCount = 1,
-            .pWaitSemaphores = &image_available_semaphore,
+            .pWaitSemaphores = &image_available_semaphore[current_frame],
             .pWaitDstStageMask = &wait_stages,
             .commandBufferCount = 1,
             .pCommandBuffers = &command_buffers[current_image],
             .signalSemaphoreCount = 1,
-            .pSignalSemaphores = &render_finished_semaphore,
+            .pSignalSemaphores = &render_finished_semaphore[current_frame],
         };
 
         err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
@@ -807,7 +759,7 @@ int main() {
         VkPresentInfoKHR present_info = {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
-            .pWaitSemaphores = &render_finished_semaphore,
+            .pWaitSemaphores = &render_finished_semaphore[current_frame],
             .swapchainCount = 1,
             .pSwapchains = &swapchain,
             .pImageIndices = &current_image,
@@ -816,5 +768,7 @@ int main() {
         vkQueuePresentKHR(queue, &present_info);
         err = vkQueueWaitIdle(queue);
         assert(err == VK_SUCCESS);
+
+        current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 }
