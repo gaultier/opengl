@@ -103,7 +103,7 @@ int main() {
     // Create Vulkan instance
     //
     const char* debug = getenv("DEBUG");
-    VkInstanceCreateInfo instance_create_info = {
+    const VkInstanceCreateInfo instance_create_info = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &app_info,
         .enabledExtensionCount = extension_count,
@@ -215,7 +215,7 @@ int main() {
             .queueCount = 1,
             .pQueuePriorities = queue_priorities};
 
-        VkDeviceCreateInfo device_create_info = {
+        const VkDeviceCreateInfo device_create_info = {
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
             .queueCreateInfoCount = 1,
             .pQueueCreateInfos = &queue_info,
@@ -316,6 +316,7 @@ int main() {
 
     printf("Created shader module for `resources/triangle_vert.spv`\n");
 
+    memset(buffer, 0, buffer_capacity);
     if (file_read("resources/triangle_frag.spv", buffer, buffer_capacity,
                   &buffer_len) != 0) {
         exit(errno);
