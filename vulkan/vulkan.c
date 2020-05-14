@@ -5,6 +5,7 @@
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_vulkan.h>
+#include <assert.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -520,5 +521,42 @@ int main() {
                 exit(1);
             }
         }
+
+        u32 current_buffer;
+        err = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
+                                    present_complete_semaphore, (VkFence)0,
+                                    &current_buffer);
+
+        assert(!err);
+
+        const VkCommandBufferBeginInfo command_buffer_begin_info = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+        const VkClearValue clear_values[1] = {
+            [0] = {.color.float32 = {current_buffer * 1.f, .2f, .2f, .2f}},
+        };
+
+        const VkRenderPassBeginInfo render_pass_begin_info = {
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .renderPass = render_pass,
+            .framebuffer = buffers[current_buffer].frame_buffer,
+            .renderArea.extent = swapchain_extent,
+            .clearValueCount = 1,
+            .pClearValues = clear_values,
+        };
+
+        err = vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
+        assert(!err);
+
+        VkImageMemoryBarrier image_memory_barrier = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .srcAccessMask = 0,
+            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+            .image = buffers[current_buffer].image,
+        };
     }
 }
