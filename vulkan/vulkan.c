@@ -15,7 +15,7 @@
 #define MAX_EXTENSIONS 64
 #define MAX_LAYERS 64
 
-static const u32 MAX_FRAMES_IN_FLIGHT = 2;
+#define MAX_FRAMES_IN_FLIGHT 2
 
 int main() {
     //
@@ -648,18 +648,33 @@ int main() {
     //
     VkSemaphore image_available_semaphore[MAX_FRAMES_IN_FLIGHT],
         render_finished_semaphore[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphoreCreateInfo semaphore_create_info = {
+
+    const VkSemaphoreCreateInfo semaphore_create_info = {
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
     };
+
+    const VkFenceCreateInfo fence_create_info = {
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT};
+
+    VkFence in_flight_fences[MAX_FRAMES_IN_FLIGHT];
+    VkFence images_in_flight_fences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 
     for (u32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
                                 &image_available_semaphore[i]);
         assert(!err);
+        printf("Created semaphore #%u 1/2\n", i);
 
         err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
                                 &render_finished_semaphore[i]);
         assert(!err);
+        printf("Created semaphore #%u 2/2\n", i);
+
+        err = vkCreateFence(device, &fence_create_info, NULL,
+                            &in_flight_fences[i]);
+        assert(!err);
+        printf("Created fence #%u\n", i);
     }
 
     //
@@ -710,6 +725,9 @@ int main() {
     //
     // Main loop
     //
+    const VkPipelineStageFlags wait_stages =
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
     usize current_frame = 0;
     for (;;) {
         // Inputs
@@ -735,13 +753,22 @@ int main() {
         //
         // Draw
         //
+        vkWaitForFences(device, 1, &in_flight_fences[current_frame], VK_TRUE,
+                        UINT64_MAX);
+
         u32 current_image;
+
         vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
                               image_available_semaphore[current_frame],
                               VK_NULL_HANDLE, &current_image);
 
-        VkPipelineStageFlags wait_stages =
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        if (images_in_flight_fences[current_image] != VK_NULL_HANDLE) {
+            vkWaitForFences(device, 1, &images_in_flight_fences[current_frame],
+                            VK_TRUE, UINT64_MAX);
+        }
+        images_in_flight_fences[current_image] =
+            in_flight_fences[current_frame];
+
         VkSubmitInfo submit_info = {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .waitSemaphoreCount = 1,
@@ -753,7 +780,9 @@ int main() {
             .pSignalSemaphores = &render_finished_semaphore[current_frame],
         };
 
-        err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+        vkResetFences(device, 1, &in_flight_fences[current_frame]);
+        err = vkQueueSubmit(queue, 1, &submit_info,
+                            in_flight_fences[current_frame]);
         assert(!err);
 
         VkPresentInfoKHR present_info = {
@@ -766,8 +795,6 @@ int main() {
         };
 
         vkQueuePresentKHR(queue, &present_info);
-        err = vkQueueWaitIdle(queue);
-        assert(err == VK_SUCCESS);
 
         current_frame = (current_frame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
