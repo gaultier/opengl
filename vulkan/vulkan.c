@@ -414,10 +414,6 @@ int main() {
     // Fixed functions
     //
     VkPipelineLayout pipeline_layout;
-    VkPipelineViewportStateCreateInfo viewport_state;
-    VkPipelineRasterizationStateCreateInfo rasterizer;
-    VkPipelineMultisampleStateCreateInfo multisampling;
-    VkPipelineColorBlendStateCreateInfo color_blending;
 
     const VkPipelineVertexInputStateCreateInfo vertex_input_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -439,9 +435,9 @@ int main() {
     };
     printf("Viewport: w=%f h=%f\n", viewport.width, viewport.height);
 
-    VkRect2D scissor = {.extent = swapchain_extent};
+    const VkRect2D scissor = {.extent = swapchain_extent};
 
-    viewport_state = (VkPipelineViewportStateCreateInfo){
+    const VkPipelineViewportStateCreateInfo viewport_state = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
         .viewportCount = 1,
         .pViewports = &viewport,
@@ -449,7 +445,7 @@ int main() {
         .pScissors = &scissor,
     };
 
-    rasterizer = (VkPipelineRasterizationStateCreateInfo){
+    const VkPipelineRasterizationStateCreateInfo rasterizer = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
         .polygonMode = VK_POLYGON_MODE_FILL,
         .lineWidth = 1.0f,
@@ -457,13 +453,13 @@ int main() {
         .frontFace = VK_FRONT_FACE_CLOCKWISE,
     };
 
-    multisampling = (VkPipelineMultisampleStateCreateInfo){
+    const VkPipelineMultisampleStateCreateInfo multisampling = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
         .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
         .minSampleShading = 1.0f,
     };
 
-    VkPipelineColorBlendAttachmentState color_blend_attachment = {
+    const VkPipelineColorBlendAttachmentState color_blend_attachment = {
         .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                           VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_B_BIT,
         .srcColorBlendFactor = VK_BLEND_FACTOR_ONE,
@@ -474,14 +470,14 @@ int main() {
         .alphaBlendOp = VK_BLEND_OP_ADD,
     };
 
-    color_blending = (VkPipelineColorBlendStateCreateInfo){
+    const VkPipelineColorBlendStateCreateInfo color_blending = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
         .logicOp = VK_LOGIC_OP_COPY,
         .attachmentCount = 1,
         .pAttachments = &color_blend_attachment,
     };
 
-    VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
+    const VkPipelineLayoutCreateInfo pipeline_layout_create_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     };
 
@@ -595,7 +591,7 @@ int main() {
     // Graphics pipeline
     //
     VkPipeline graphics_pipeline;
-    VkGraphicsPipelineCreateInfo pipeline_info = {
+    const VkGraphicsPipelineCreateInfo pipeline_info = {
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
         .stageCount = 2,
         .pStages = shader_stages,
@@ -680,7 +676,7 @@ int main() {
     //
     // Command buffers
     //
-    VkCommandBufferAllocateInfo allocate_info = {
+    const VkCommandBufferAllocateInfo allocate_info = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .commandPool = command_pool,
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
@@ -690,12 +686,12 @@ int main() {
     VkCommandBuffer command_buffers[swapchain_image_count];
     err = vkAllocateCommandBuffers(device, &allocate_info, command_buffers);
 
-    for (usize i = 0; i < swapchain_image_count; i++) {
-        const VkCommandBufferBeginInfo command_buffer_begin_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-        const VkClearValue clear_color = {
-            .color.float32 = {0.0f, 0.0f, 0.0f, 1.0f}};
+    const VkCommandBufferBeginInfo command_buffer_begin_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+    const VkClearValue clear_color = {
+        .color.float32 = {0.0f, 0.0f, 0.0f, 1.0f}};
 
+    for (usize i = 0; i < swapchain_image_count; i++) {
         const VkRenderPassBeginInfo render_pass_begin_info = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .renderPass = render_pass,
