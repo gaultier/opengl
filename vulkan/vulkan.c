@@ -484,12 +484,10 @@ int main() {
                                      &pipeline_layout);
     }
 
-    struct {
-        VkImage image;
-        VkCommandBuffer command;
-        VkImageView view;
-        VkFramebuffer frame_buffer;
-    } buffers[swapchain_image_count];
+    VkImage images[swapchain_image_count];
+    VkCommandBuffer commands[swapchain_image_count];
+    VkImageView views[swapchain_image_count];
+    VkFramebuffer frame_buffers[swapchain_image_count];
 
     {
         err = vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count,
@@ -509,7 +507,7 @@ int main() {
         }
 
         for (u32 i = 0; i < swapchain_image_count; i++)
-            buffers[i].image = swapchain_images[i];
+            images[i] = swapchain_images[i];
     }
 
     for (u32 i = 0; i < swapchain_image_count; i++) {
@@ -532,11 +530,11 @@ int main() {
                     .layerCount = 1,
                 },
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .image = buffers[i].image,
+            .image = images[i],
         };
 
-        err = vkCreateImageView(device, &color_attachment_view, NULL,
-                                &buffers[i].view);
+        err =
+            vkCreateImageView(device, &color_attachment_view, NULL, &views[i]);
 
         if (err) {
             fprintf(stderr, "vkCreateImageView (%u) failed: %d\n", i, err);
@@ -619,7 +617,7 @@ int main() {
     //
     for (u32 i = 0; i < swapchain_image_count; i++) {
         VkImageView attachments[1] = {
-            [0] = buffers[i].view,
+            [0] = views[i],
         };
 
         const VkFramebufferCreateInfo frame_buffer_create_info = {
@@ -634,7 +632,7 @@ int main() {
         };
 
         err = vkCreateFramebuffer(device, &frame_buffer_create_info, NULL,
-                                  &buffers[i].frame_buffer);
+                                  &frame_buffers[i]);
         if (err) {
             fprintf(stderr, "vkCreateFramebuffer failed: %d\n", err);
             exit(1);
@@ -683,7 +681,7 @@ int main() {
         const VkRenderPassBeginInfo render_pass_begin_info = {
             .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
             .renderPass = render_pass,
-            .framebuffer = buffers[current_buffer].frame_buffer,
+            .framebuffer = frame_buffers[i],
             .renderArea.extent = swapchain_extent,
             .clearValueCount = 1,
             .pClearValues = &clear_color,
