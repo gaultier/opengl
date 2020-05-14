@@ -450,4 +450,30 @@ int main() {
     }
 
     printf("Created render pass\n");
+
+    for (u32 i = 0; i < swapchain_image_count; i++) {
+        VkImageView attachments[1] = {
+            [0] = buffers[i].view,
+        };
+
+        const VkFramebufferCreateInfo frame_buffer_create_info = {
+
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO,
+            .renderPass = render_pass,
+            .attachmentCount = 1,
+            .pAttachments = attachments,
+            .width = swapchain_extent.width,
+            .height = swapchain_extent.height,
+            .layers = 1,
+        };
+
+        err = vkCreateFramebuffer(device, &frame_buffer_create_info, NULL,
+                                  &buffers[i].frame_buffer);
+        if (err) {
+            fprintf(stderr, "vkCreateFramebuffer failed: %d\n", err);
+            exit(1);
+        }
+
+        printf("Created frame buffer #%u\n", i);
+    }
 }
