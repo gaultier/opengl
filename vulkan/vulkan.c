@@ -485,7 +485,6 @@ int main() {
     }
 
     VkImage images[swapchain_image_count];
-    VkCommandBuffer commands[swapchain_image_count];
     VkImageView views[swapchain_image_count];
     VkFramebuffer frame_buffers[swapchain_image_count];
 
