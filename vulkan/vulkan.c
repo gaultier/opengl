@@ -765,7 +765,7 @@ int main() {
         images_in_flight_fences[current_image] =
             in_flight_fences[current_frame];
 
-        VkSubmitInfo submit_info = {
+        const VkSubmitInfo submit_info = {
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
             .waitSemaphoreCount = 1,
             .pWaitSemaphores = &image_available_semaphore[current_frame],
@@ -781,7 +781,7 @@ int main() {
                             in_flight_fences[current_frame]);
         assert(!err);
 
-        VkPresentInfoKHR present_info = {
+        const VkPresentInfoKHR present_info = {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
             .pWaitSemaphores = &render_finished_semaphore[current_frame],
