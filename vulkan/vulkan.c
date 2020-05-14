@@ -1,5 +1,8 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_error.h>
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_vulkan.h>
 #include <stdio.h>
@@ -451,6 +454,9 @@ int main() {
 
     printf("Created render pass\n");
 
+    //
+    // Frame buffers
+    //
     for (u32 i = 0; i < swapchain_image_count; i++) {
         VkImageView attachments[1] = {
             [0] = buffers[i].view,
@@ -475,5 +481,30 @@ int main() {
         }
 
         printf("Created frame buffer #%u\n", i);
+    }
+
+    //
+    // Main loop
+    //
+    for (;;) {
+        // Inputs
+        {
+            SDL_Event event;
+            SDL_bool done = SDL_FALSE;
+
+            while (SDL_PollEvent(&event)) {
+                switch (event.type) {
+                    case SDL_QUIT:
+                        done = SDL_TRUE;
+                        break;
+                    case SDL_KEYDOWN:
+
+                        if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                            done = SDL_TRUE;
+                        break;
+                }
+            }
+            if (done) break;
+        }
     }
 }
