@@ -558,5 +558,65 @@ int main() {
             .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
             .image = buffers[current_buffer].image,
         };
+
+        vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL,
+                             0, NULL, 1, &image_memory_barrier);
+
+        vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
+                             VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdEndRenderPass(command_buffer);
+
+        VkImageMemoryBarrier present_barrier = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+            .image = buffers[current_buffer].image,
+        };
+
+        vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL,
+                             0, NULL, 1, &present_barrier);
+
+        err = vkEndCommandBuffer(command_buffer);
+        assert(!err);
+
+        VkPipelineStageFlags pipe_stage_flags =
+            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+
+        VkSubmitInfo submit_info = {
+
+            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .commandBufferCount = 1,
+            .pCommandBuffers = &command_buffer,
+            .waitSemaphoreCount = 1,
+            .pWaitSemaphores = &present_complete_semaphore,
+            .pWaitDstStageMask = &pipe_stage_flags,
+        };
+
+        err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
+        assert(!err);
+
+        VkPresentInfoKHR present = {.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+                                    .swapchainCount = 1,
+                                    .pSwapchains = &swapchain,
+                                    .pImageIndices = &current_buffer};
+
+        err = vkQueuePresentKHR(queue, &present);
+
+        if (err == VK_SUBOPTIMAL_KHR) {
+            fprintf(stderr, "Warning: suboptimal present\n");
+        } else
+            assert(!err);
+
+        err = vkQueueWaitIdle(queue);
+        assert(err = VK_SUCCESS);
+
+        vkDestroySemaphore(device, present_complete_semaphore, NULL);
     }
 }
