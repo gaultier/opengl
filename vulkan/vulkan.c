@@ -814,6 +814,11 @@ int main() {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
             .waitSemaphoreCount = 1,
             .pWaitSemaphores = &render_finished_semaphore,
+            .swapchainCount = 1,
+            .pSwapchains = &swapchain,
+            .pImageIndices = &current_image,
         };
+
+        vkQueuePresentKHR(queue, &present_info);
     }
 }
