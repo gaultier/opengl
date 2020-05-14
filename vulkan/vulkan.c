@@ -506,5 +506,19 @@ int main() {
             }
             if (done) break;
         }
+
+        VkSemaphore present_complete_semaphore;
+        {
+            VkSemaphoreCreateInfo semaphore_create_info = {
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+            };
+
+            err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                    &present_complete_semaphore);
+            if (err) {
+                fprintf(stderr, "vkCreateSemaphore failed: %d\n", err);
+                exit(1);
+            }
+        }
     }
 }
