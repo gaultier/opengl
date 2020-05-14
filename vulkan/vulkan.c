@@ -490,12 +490,61 @@ int main() {
     {
         const usize buffer_capacity = 10 * 1000 * 1000;
         u8* buffer = ogl_malloc(buffer_capacity);
-        usize vert_shader_len;
+        usize buffer_len;
 
         if (file_read("resources/triangle_vert.spv", buffer, buffer_capacity,
-                      &vert_shader_len) != 0) {
+                      &buffer_len) != 0) {
             exit(errno);
         }
+
+        VkShaderModuleCreateInfo create_info = {
+            .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+            .codeSize = buffer_len,
+            .pCode = (u32*)buffer,
+        };
+
+        VkShaderModule vert_shader_module;
+        err = vkCreateShaderModule(device, &create_info, NULL,
+                                   &vert_shader_module);
+        assert(!err);
+
+        printf("Created shader module for `resources/triangle_vert.spv`\n");
+
+        if (file_read("resources/triangle_frag.spv", buffer, buffer_capacity,
+                      &buffer_len) != 0) {
+            exit(errno);
+        }
+
+        create_info = (VkShaderModuleCreateInfo){
+            .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+            .codeSize = buffer_len,
+            .pCode = (u32*)buffer,
+        };
+
+        VkShaderModule frag_shader_module;
+        err = vkCreateShaderModule(device, &create_info, NULL,
+                                   &frag_shader_module);
+        assert(!err);
+        printf("Created shader module for `resources/triangle_frag.spv`\n");
+
+        VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .stage = VK_SHADER_STAGE_VERTEX_BIT,
+            .module = vert_shader_module,
+            .pName = "main"  // Entrypoint function
+        };
+
+        VkPipelineShaderStageCreateInfo frag_shader_stage_info = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+            .module = frag_shader_module,
+            .pName = "main"  // Entrypoint function
+        };
+
+        VkPipelineShaderStageCreateInfo shader_stages[] = {
+            vert_shader_stage_info,
+            frag_shader_stage_info,
+        };
     }
 
     //
