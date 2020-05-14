@@ -274,24 +274,6 @@ int main() {
     printf("Color space: %d\n", color_space);
 
     //
-    // Command buffer
-    //
-    VkCommandBuffer command_buffer;
-    {
-        const VkCommandBufferAllocateInfo allocate_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            .commandPool = command_pool,
-            .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            .commandBufferCount = 1};
-
-        err = vkAllocateCommandBuffers(device, &allocate_info, &command_buffer);
-        if (err) {
-            fprintf(stderr, "vkAllocateCommandBuffers failed: %d\n", err);
-            exit(1);
-        }
-    }
-
-    //
     // Shaders
     //
     VkPipelineShaderStageCreateInfo shader_stages[2];
@@ -662,6 +644,69 @@ int main() {
     }
 
     //
+    // Create semaphores
+    //
+    VkSemaphore image_available_semaphore, render_finished_semaphore;
+    {
+        VkSemaphoreCreateInfo semaphore_create_info = {
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+        };
+
+        err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                &image_available_semaphore);
+        assert(!err);
+
+        err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                &render_finished_semaphore);
+        assert(!err);
+    }
+
+    //
+    // Command buffers
+    //
+    VkCommandBufferAllocateInfo allocate_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .commandPool = command_pool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = swapchain_image_count,
+    };
+
+    VkCommandBuffer command_buffers[swapchain_image_count];
+    err = vkAllocateCommandBuffers(device, &allocate_info, command_buffers);
+
+    for (usize i = 0; i < swapchain_image_count; i++) {
+        const VkCommandBufferBeginInfo command_buffer_begin_info = {
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
+        const VkClearValue clear_color = {
+            .color.float32 = {0.0f, 0.0f, 0.0f, 1.0f}};
+
+        const VkRenderPassBeginInfo render_pass_begin_info = {
+            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+            .renderPass = render_pass,
+            .framebuffer = buffers[current_buffer].frame_buffer,
+            .renderArea.extent = swapchain_extent,
+            .clearValueCount = 1,
+            .pClearValues = &clear_color,
+        };
+
+        err = vkBeginCommandBuffer(command_buffers[i],
+                                   &command_buffer_begin_info);
+        assert(!err);
+
+        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info,
+                             VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          graphics_pipeline);
+
+        vkCmdDraw(command_buffers[i], 3, 1, 0, 0);
+        vkCmdEndRenderPass(command_buffers[i]);
+
+        err = vkEndCommandBuffer(command_buffers[i]);
+        assert(!err);
+    }
+
+    //
     // Main loop
     //
     for (;;) {
@@ -685,115 +730,62 @@ int main() {
             if (done) break;
         }
 
-        VkSemaphore present_complete_semaphore;
-        {
-            VkSemaphoreCreateInfo semaphore_create_info = {
-                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-            };
+        //
+        // Draw
+        //
 
-            err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
-                                    &present_complete_semaphore);
-            if (err) {
-                fprintf(stderr, "vkCreateSemaphore failed: %d\n", err);
-                exit(1);
-            }
-        }
+        /* VkImageMemoryBarrier present_barrier = { */
+        /*     .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER, */
+        /*     .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, */
+        /*     .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT, */
+        /*     .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, */
+        /*     .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, */
+        /*     .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, */
+        /*     .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED, */
+        /*     .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}, */
+        /*     .image = buffers[current_buffer].image, */
+        /* }; */
 
-        u32 current_buffer;
-        err = vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
-                                    present_complete_semaphore, (VkFence)0,
-                                    &current_buffer);
+        /* vkCmdPipelineBarrier(command_buffer,
+         * VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, */
+        /*                      VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0,
+         * NULL, */
+        /*                      0, NULL, 1, &present_barrier); */
 
-        assert(!err);
+        /* VkPipelineStageFlags pipe_stage_flags = */
+        /*     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; */
 
-        const VkCommandBufferBeginInfo command_buffer_begin_info = {
-            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-        const VkClearValue clear_values[1] = {
-            [0] = {.color.float32 = {current_buffer * 1.f, .2f, .2f, .2f}},
-        };
+        /* VkSubmitInfo submit_info = { */
+        /*     .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO, */
+        /*     .commandBufferCount = 1, */
+        /*     .pCommandBuffers = &buffers[current_buffer].command, */
+        /*     .waitSemaphoreCount = 1, */
+        /*     .pWaitSemaphores = &image_available_semaphore, */
+        /*     .pWaitDstStageMask = &pipe_stage_flags, */
+        /* }; */
 
-        const VkRenderPassBeginInfo render_pass_begin_info = {
-            .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-            .renderPass = render_pass,
-            .framebuffer = buffers[current_buffer].frame_buffer,
-            .renderArea.extent = swapchain_extent,
-            .clearValueCount = 1,
-            .pClearValues = clear_values,
-        };
+        /* err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE); */
+        /* assert(!err); */
 
-        err = vkBeginCommandBuffer(command_buffer, &command_buffer_begin_info);
-        assert(!err);
+        /* VkPresentInfoKHR present = {.sType =
+         * VK_STRUCTURE_TYPE_PRESENT_INFO_KHR, */
+        /*                             .swapchainCount = 1, */
+        /*                             .pSwapchains = &swapchain, */
+        /*                             .pImageIndices = &current_buffer}; */
 
-        VkImageMemoryBarrier image_memory_barrier = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = 0,
-            .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
-            .image = buffers[current_buffer].image,
-        };
+        /* err = vkQueuePresentKHR(queue, &present); */
 
-        vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL,
-                             0, NULL, 1, &image_memory_barrier);
+        /* if (err == VK_SUBOPTIMAL_KHR) { */
+        /*     fprintf(stderr, "Warning: suboptimal present\n"); */
+        /* } else */
+        /*     assert(!err); */
 
-        vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info,
-                             VK_SUBPASS_CONTENTS_INLINE);
-        vkCmdEndRenderPass(command_buffer);
+        /* err = vkQueueWaitIdle(queue); */
+        /* assert(err == VK_SUCCESS); */
 
-        VkImageMemoryBarrier present_barrier = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-            .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            .dstAccessMask = VK_ACCESS_MEMORY_READ_BIT,
-            .oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
-            .image = buffers[current_buffer].image,
-        };
-
-        vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL,
-                             0, NULL, 1, &present_barrier);
-
-        err = vkEndCommandBuffer(command_buffer);
-        assert(!err);
-
-        VkPipelineStageFlags pipe_stage_flags =
-            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-
-        VkSubmitInfo submit_info = {
-
-            .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-            .commandBufferCount = 1,
-            .pCommandBuffers = &command_buffer,
-            .waitSemaphoreCount = 1,
-            .pWaitSemaphores = &present_complete_semaphore,
-            .pWaitDstStageMask = &pipe_stage_flags,
-        };
-
-        err = vkQueueSubmit(queue, 1, &submit_info, VK_NULL_HANDLE);
-        assert(!err);
-
-        VkPresentInfoKHR present = {.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-                                    .swapchainCount = 1,
-                                    .pSwapchains = &swapchain,
-                                    .pImageIndices = &current_buffer};
-
-        err = vkQueuePresentKHR(queue, &present);
-
-        if (err == VK_SUBOPTIMAL_KHR) {
-            fprintf(stderr, "Warning: suboptimal present\n");
-        } else
-            assert(!err);
-
-        err = vkQueueWaitIdle(queue);
-        assert(err == VK_SUCCESS);
-
-        vkDestroySemaphore(device, present_complete_semaphore, NULL);
+        u32 current_image;
+        vkAcquireNextImageKHR(device, swapchain, UINT64_MAX,
+                              image_available_semaphore, VK_NULL_HANDLE,
+                              &current_image);
     }
 }
