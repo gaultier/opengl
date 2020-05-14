@@ -407,4 +407,47 @@ int main() {
         }
         printf("Initialized image view #%u\n", i);
     }
+
+    //
+    // Attachments
+    //
+    const VkAttachmentDescription attachments[1] = {
+        [0] =
+            {
+                .format = format,
+                .samples = VK_SAMPLE_COUNT_1_BIT,
+                .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+                .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+                .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                .initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                .finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            },
+    };
+
+    const VkAttachmentReference color_reference = {
+        .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
+
+    const VkSubpassDescription subpass = {
+        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .colorAttachmentCount = 1,
+        .pColorAttachments = &color_reference,
+    };
+
+    const VkRenderPassCreateInfo render_pass_info = {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .attachmentCount = 1,
+        .pAttachments = attachments,
+        .subpassCount = 1,
+        .pSubpasses = &subpass,
+    };
+
+    VkRenderPass render_pass;
+    err = vkCreateRenderPass(device, &render_pass_info, NULL, &render_pass);
+
+    if (err) {
+        fprintf(stderr, "vkCreateRenderPass failed: %d\n", err);
+        exit(1);
+    }
+
+    printf("Created render pass\n");
 }
