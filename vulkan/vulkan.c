@@ -286,4 +286,63 @@ int main() {
             exit(1);
         }
     }
+
+    //
+    // Swap chain
+    //
+    VkSwapchainKHR swapchain;
+    u32 swapchain_image_count;
+    VkExtent2D swapchain_extent;
+    {
+        VkSurfaceCapabilitiesKHR surface_capabilities;
+        err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface,
+                                                        &surface_capabilities);
+
+        if (err) {
+            fprintf(stderr,
+                    "vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: %d\n",
+                    err);
+            exit(1);
+        }
+
+        // Get drawing surface dimensions
+        if (surface_capabilities.currentExtent.width == (UINT32_MAX)) {
+            i32 w, h;
+            SDL_GetWindowSize(window, &w, &h);
+            swapchain_extent.width = w;
+            swapchain_extent.height = h;
+        } else {
+            swapchain_extent = surface_capabilities.currentExtent;
+        }
+
+        swapchain_image_count = surface_capabilities.minImageCount + 1;
+
+        if ((surface_capabilities.maxImageCount > 0) &&
+            (swapchain_image_count > surface_capabilities.maxImageCount)) {
+            swapchain_image_count = surface_capabilities.maxImageCount;
+        }
+
+        const VkSwapchainCreateInfoKHR swapchain_create_info = {
+            .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+            .surface = surface,
+            .minImageCount = swapchain_image_count,
+            .imageFormat = format,
+            .imageColorSpace = color_space,
+            .imageExtent = swapchain_extent,
+            .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            .preTransform = surface_capabilities.currentTransform,
+            .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+            .imageArrayLayers = 1,
+            .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+            .presentMode = VK_PRESENT_MODE_FIFO_KHR,
+            .clipped = 1};
+
+        err = vkCreateSwapchainKHR(device, &swapchain_create_info, NULL,
+                                   &swapchain);
+
+        if (err) {
+            fprintf(stderr, "vkCreateSwapchainKHR failed: %d\n", err);
+            exit(1);
+        }
+    }
 }
