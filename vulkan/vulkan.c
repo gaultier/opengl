@@ -333,14 +333,14 @@ int main() {
     assert(!err);
     printf("Created shader module for `resources/triangle_frag.spv`\n");
 
-    VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
+    const VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = VK_SHADER_STAGE_VERTEX_BIT,
         .module = vert_shader_module,
         .pName = "main"  // Entrypoint function
     };
 
-    VkPipelineShaderStageCreateInfo frag_shader_stage_info = {
+    const VkPipelineShaderStageCreateInfo frag_shader_stage_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
         .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
         .module = frag_shader_module,
@@ -417,20 +417,19 @@ int main() {
     VkPipelineViewportStateCreateInfo viewport_state;
     VkPipelineRasterizationStateCreateInfo rasterizer;
     VkPipelineMultisampleStateCreateInfo multisampling;
-    VkPipelineInputAssemblyStateCreateInfo input_assembly;
-    VkPipelineVertexInputStateCreateInfo vertex_input_info;
     VkPipelineColorBlendStateCreateInfo color_blending;
-    vertex_input_info = (VkPipelineVertexInputStateCreateInfo){
+
+    const VkPipelineVertexInputStateCreateInfo vertex_input_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
     };
 
-    input_assembly = (VkPipelineInputAssemblyStateCreateInfo){
+    const VkPipelineInputAssemblyStateCreateInfo input_assembly = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
         .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
         .primitiveRestartEnable = VK_FALSE,
     };
 
-    VkViewport viewport = {
+    const VkViewport viewport = {
         .x = 0.0f,
         .y = 0.0f,
         .width = swapchain_extent.width,
