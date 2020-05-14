@@ -345,4 +345,32 @@ int main() {
             exit(1);
         }
     }
+    printf("Swapchain image count: %u\n", swapchain_image_count);
+
+    struct {
+        VkImage image;
+        VkCommandBuffer command;
+        VkImageView view;
+        VkFramebuffer frame_buffer;
+    } buffers[swapchain_image_count];
+
+    {
+        err = vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count,
+                                      0);
+        if (err) {
+            fprintf(stderr, "vkGetSwapchainImagesKHR failed: %d\n", err);
+            exit(1);
+        }
+
+        VkImage swapchain_images[swapchain_image_count];
+        err = vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count,
+                                      swapchain_images);
+
+        if (err) {
+            fprintf(stderr, "vkGetSwapchainImagesKHR (2) failed: %d\n", err);
+            exit(1);
+        }
+    }
+    for (u32 i = 0; i < swapchain_image_count; i++) {
+    }
 }
