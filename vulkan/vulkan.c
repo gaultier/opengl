@@ -485,6 +485,20 @@ int main() {
     }
 
     //
+    // Shaders
+    //
+    {
+        const usize buffer_capacity = 10 * 1000 * 1000;
+        u8* buffer = ogl_malloc(buffer_capacity);
+        usize vert_shader_len;
+
+        if (file_read("resources/triangle_vert.spv", buffer, buffer_capacity,
+                      &vert_shader_len) != 0) {
+            exit(errno);
+        }
+    }
+
+    //
     // Main loop
     //
     for (;;) {
