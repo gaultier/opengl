@@ -387,10 +387,13 @@ int main() {
         if (surface_capabilities.currentExtent.width == (UINT32_MAX)) {
             i32 w, h;
             SDL_GetWindowSize(window, &w, &h);
+            printf("Window size as reported by the SDL: w=%d h=%d\n", w, h);
             swapchain_extent.width = w;
             swapchain_extent.height = h;
         } else {
             swapchain_extent = surface_capabilities.currentExtent;
+            printf("Window size as reported by Vulkan: w=%u h=%u\n",
+                   swapchain_extent.width, swapchain_extent.height);
         }
 
         swapchain_image_count = surface_capabilities.minImageCount + 1;
