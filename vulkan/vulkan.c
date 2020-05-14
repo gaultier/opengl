@@ -294,6 +294,7 @@ int main() {
     //
     // Shaders
     //
+    VkPipelineShaderStageCreateInfo shader_stages[2];
     {
         const usize buffer_capacity = 10 * 1000 * 1000;
         u8* buffer = ogl_malloc(buffer_capacity);
@@ -348,11 +349,8 @@ int main() {
             .pName = "main"  // Entrypoint function
         };
 
-        // FIXME: Use
-        VkPipelineShaderStageCreateInfo shader_stages[] = {
-            vert_shader_stage_info,
-            frag_shader_stage_info,
-        };
+        shader_stages[0] = vert_shader_stage_info;
+        shader_stages[1] = frag_shader_stage_info;
     }
 
     //
@@ -419,12 +417,18 @@ int main() {
     // Fixed functions
     //
     VkPipelineLayout pipeline_layout;
+    VkPipelineViewportStateCreateInfo viewport_state;
+    VkPipelineRasterizationStateCreateInfo rasterizer;
+    VkPipelineMultisampleStateCreateInfo multisampling;
+    VkPipelineInputAssemblyStateCreateInfo input_assembly;
+    VkPipelineVertexInputStateCreateInfo vertex_input_info;
+    VkPipelineColorBlendStateCreateInfo color_blending;
     {
-        VkPipelineVertexInputStateCreateInfo vertex_input_info = {
+        vertex_input_info = (VkPipelineVertexInputStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
         };
 
-        VkPipelineInputAssemblyStateCreateInfo input_assembly = {
+        input_assembly = (VkPipelineInputAssemblyStateCreateInfo){
             .sType =
                 VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
             .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
@@ -442,7 +446,7 @@ int main() {
 
         VkRect2D scissor = {.extent = swapchain_extent};
 
-        VkPipelineViewportStateCreateInfo viewport_state = {
+        viewport_state = (VkPipelineViewportStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
             .viewportCount = 1,
             .pViewports = &viewport,
@@ -450,7 +454,7 @@ int main() {
             .pScissors = &scissor,
         };
 
-        VkPipelineRasterizationStateCreateInfo rasterizer = {
+        rasterizer = (VkPipelineRasterizationStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
             .polygonMode = VK_POLYGON_MODE_FILL,
             .lineWidth = 1.0f,
@@ -458,7 +462,7 @@ int main() {
             .frontFace = VK_FRONT_FACE_CLOCKWISE,
         };
 
-        VkPipelineMultisampleStateCreateInfo multisampling = {
+        multisampling = (VkPipelineMultisampleStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
             .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
             .minSampleShading = 1.0f,
@@ -476,7 +480,7 @@ int main() {
             .alphaBlendOp = VK_BLEND_OP_ADD,
         };
 
-        VkPipelineColorBlendStateCreateInfo color_blending = {
+        color_blending = (VkPipelineColorBlendStateCreateInfo){
             .sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
             .logicOp = VK_LOGIC_OP_COPY,
             .attachmentCount = 1,
@@ -601,6 +605,18 @@ int main() {
     }
 
     printf("Created render pass\n");
+
+    VkGraphicsPipelineCreateInfo pipeline_info = {
+        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+        .stageCount = 2,
+        .pStages = shader_stages,
+        .pVertexInputState = &vertex_input_info,
+        .pInputAssemblyState = &input_assembly,
+        .pViewportState = &viewport_state,
+        .pRasterizationState = &rasterizer,
+        .pMultisampleState = &multisampling,
+        .pColorBlendState = &color_blending,
+    };
 
     //
     // Frame buffers
