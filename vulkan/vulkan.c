@@ -100,13 +100,14 @@ int main() {
     //
     // Create Vulkan instance
     //
+    const char* debug = getenv("DEBUG");
     VkInstanceCreateInfo instance_create_info = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &app_info,
         .enabledExtensionCount = extension_count,
         .ppEnabledExtensionNames = extension_names,
-        .enabledLayerCount = 1,
-        .ppEnabledLayerNames = validation_layers};
+        .enabledLayerCount = debug ? 1 : 0,
+        .ppEnabledLayerNames = debug ? validation_layers: NULL};
 
     err = vkCreateInstance(&instance_create_info, NULL, &instance);
     if (err) {
@@ -631,7 +632,7 @@ int main() {
 
         const VkFramebufferCreateInfo frame_buffer_create_info = {
 
-            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_ATTACHMENTS_CREATE_INFO,
+            .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .renderPass = render_pass,
             .attachmentCount = 1,
             .pAttachments = attachments,
