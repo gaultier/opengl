@@ -124,6 +124,41 @@ static void vk_create_physical_device(VkInstance* instance,
     printf("GPUs detected: %u\n", gpu_count);
 }
 
+static u32 vk_find_queue_family(VkPhysicalDevice* gpu, VkSurfaceKHR* surface) {
+    u32 queue_family_index = UINT32_MAX;
+    u32 queue_count;
+
+    vkGetPhysicalDeviceQueueFamilyProperties(*gpu, &queue_count, NULL);
+    VkQueueFamilyProperties queue_properties[queue_count];
+    vkGetPhysicalDeviceQueueFamilyProperties(*gpu, &queue_count,
+
+                                             queue_properties);
+
+    if (queue_count == 0) {
+        fprintf(stderr, "No queue family properties were found\n");
+        exit(1);
+    }
+    printf("Found %u family properties\n", queue_count);
+
+    for (u32 i = 0; i < queue_count; i++) {
+        VkBool32 supported;
+        vkGetPhysicalDeviceSurfaceSupportKHR(*gpu, i, *surface, &supported);
+
+        if (supported &&
+            (queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
+            queue_family_index = i;
+            break;
+        }
+    }
+
+    if (queue_family_index == UINT32_MAX) {
+        fprintf(stderr, "No proper queue family found\n");
+        exit(1);
+    }
+
+    return queue_family_index;
+}
+
 int main() {
     // Create window
     SDL_Window* window = window_create();
@@ -158,42 +193,12 @@ int main() {
     //
     // Create command pool & queue
     //
-    VkResult err;
+    const u32 queue_family_index = vk_find_queue_family(&gpu, &surface);
+
     VkDevice device;
     VkQueue queue;
     VkCommandPool command_pool;
-
-    u32 queue_family_index = UINT32_MAX;
-    u32 queue_count;
-
-    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_count, NULL);
-    VkQueueFamilyProperties queue_properties[queue_count];
-    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &queue_count,
-
-                                             queue_properties);
-
-    if (queue_count == 0) {
-        fprintf(stderr, "No queue family properties were found\n");
-        exit(1);
-    }
-    printf("Found %u family properties\n", queue_count);
-
-    for (u32 i = 0; i < queue_count; i++) {
-        VkBool32 supported;
-        vkGetPhysicalDeviceSurfaceSupportKHR(gpu, i, surface, &supported);
-
-        if (supported &&
-            (queue_properties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0) {
-            queue_family_index = i;
-            break;
-        }
-    }
-
-    if (queue_family_index == UINT32_MAX) {
-        fprintf(stderr, "No proper queue family found\n");
-        exit(1);
-    }
-
+    VkResult err;
     {
         u32 extension_count = 0;
 
