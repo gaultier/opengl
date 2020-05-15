@@ -347,8 +347,8 @@ int main() {
         i32 w, h;
         SDL_GetWindowSize(window, &w, &h);
         printf("Window size as reported by the SDL: w=%d h=%d\n", w, h);
-        swapchain_extent.width = w;
-        swapchain_extent.height = h;
+        swapchain_extent.width = (u32)w;
+        swapchain_extent.height = (u32)h;
     } else {
         swapchain_extent = surface_capabilities.currentExtent;
         printf("Window size as reported by Vulkan: w=%u h=%u\n",
@@ -405,7 +405,7 @@ int main() {
         .minDepth = 0.0f,
         .maxDepth = 1.0f,
     };
-    printf("Viewport: w=%f h=%f\n", viewport.width, viewport.height);
+    printf("Viewport: w=%u h=%u\n", (u32)viewport.width, (u32)viewport.height);
 
     const VkRect2D scissor = {.extent = swapchain_extent};
 

@@ -4,3 +4,5 @@
 -Wextra
 -Wpedantic 
 -std=c99
+-Wsign-conversion
+-Wdouble-promotion

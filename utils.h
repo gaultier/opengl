@@ -35,7 +35,7 @@ static inline void* ogl_malloc(usize size) {
     return mem;
 }
 
-static inline u32 file_read(const char file_path[], u8* content,
+static inline i32 file_read(const char file_path[], u8* content,
                             usize content_capacity, usize* content_len) {
     FILE* file = NULL;
     if ((file = fopen(file_path, "r")) == NULL) {

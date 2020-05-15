@@ -1,6 +1,6 @@
 .POSIX:
 
-CFLAGS = -Wall -Wextra -Wpedantic -g -isystem/usr/local/include -ffast-math -std=c99
+CFLAGS = -Wall -Wextra -Wpedantic -Wsign-conversion -Wdouble-promotion -g -isystem/usr/local/include -ffast-math -std=c99
 CFLAGS_RELEASE = -O2
 LDFLAGS = 
 LIBS = -lsdl2 -lvulkan
