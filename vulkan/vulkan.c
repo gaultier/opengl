@@ -17,7 +17,7 @@
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
-SDL_Window* window_create() {
+static SDL_Window* window_create() {
     SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "Unable to initialize SDL: %s", SDL_GetError());
@@ -40,9 +40,9 @@ SDL_Window* window_create() {
     return window;
 }
 
-void vk_get_extensions(SDL_Window* window,
-                       const char* extension_names[MAX_EXTENSIONS],
-                       u32* extension_count) {
+static void vk_get_extensions(SDL_Window* window,
+                              const char* extension_names[MAX_EXTENSIONS],
+                              u32* extension_count) {
     extension_names[*extension_count] = VK_KHR_SURFACE_EXTENSION_NAME;
     *extension_count = *extension_count + 1;
 
@@ -61,8 +61,34 @@ void vk_get_extensions(SDL_Window* window,
     }
 }
 
+static void vk_get_validation_layers(const char* validation_layer) {
+    VkLayerProperties layers[MAX_LAYERS];
+    u32 layer_count;
+
+    vkEnumerateInstanceLayerProperties(&layer_count, NULL);
+    assert(layer_count < MAX_LAYERS);
+    printf("Available layers: %u\n", layer_count);
+
+    vkEnumerateInstanceLayerProperties(&layer_count, layers);
+
+    _Bool found = false;
+    for (u32 i = 0; i < layer_count; i++) {
+        printf("Available layer: %s\n", layers[i].layerName);
+
+        if (strcmp(validation_layer, layers[i].layerName) == 0) {
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        fprintf(stderr, "Validation layer not found\n");
+    }
+    printf("Validation layer found, activating\n");
+}
+
 int main() {
     SDL_Window* window = window_create();
+
     u32 extension_count = 0;
     const char* extension_names[MAX_EXTENSIONS] = {0};
     vk_get_extensions(window, extension_names, &extension_count);
@@ -70,29 +96,10 @@ int main() {
     ///
     // Get validation layers
     //
-    VkLayerProperties layers[MAX_LAYERS];
-    u32 layer_count;
-    const char* validation_layers[] = {"VK_LAYER_KHRONOS_validation"};
-    {
-        vkEnumerateInstanceLayerProperties(&layer_count, NULL);
-        assert(layer_count < MAX_LAYERS);
-        printf("Available layers: %u\n", layer_count);
-
-        vkEnumerateInstanceLayerProperties(&layer_count, layers);
-
-        _Bool found = false;
-        for (u32 i = 0; i < layer_count; i++) {
-            printf("Available layer: %s\n", layers[i].layerName);
-
-            if (strcmp(validation_layers[0], layers[i].layerName) == 0) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            fprintf(stderr, "Validation layer not found\n");
-        }
-        printf("Validation layer found\n");
+    const char* validation_layer = "VK_LAYER_KHRONOS_validation";
+    const char* const debug = getenv("DEBUG");
+    if (debug) {
+        vk_get_validation_layers(validation_layer);
     }
 
     //
@@ -105,14 +112,13 @@ int main() {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .apiVersion = VK_MAKE_VERSION(1, 0, 0)};
 
-    const char* debug = getenv("DEBUG");
     const VkInstanceCreateInfo instance_create_info = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
         .pApplicationInfo = &app_info,
         .enabledExtensionCount = extension_count,
         .ppEnabledExtensionNames = extension_names,
         .enabledLayerCount = debug ? 1 : 0,
-        .ppEnabledLayerNames = debug ? validation_layers : NULL};
+        .ppEnabledLayerNames = debug ? &validation_layer : NULL};
 
     err = vkCreateInstance(&instance_create_info, NULL, &instance);
     if (err) {
