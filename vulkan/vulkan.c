@@ -182,6 +182,18 @@ static void vk_create_logical_device(VkPhysicalDevice* gpu,
     assert(!vkCreateDevice(*gpu, &device_create_info, NULL, device));
 }
 
+static void vk_create_command_pool(VkDevice* device, u32 queue_family_index,
+                                   VkCommandPool* command_pool) {
+    const VkCommandPoolCreateInfo command_pool_create_info = {
+
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .queueFamilyIndex = queue_family_index,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT};
+
+    assert(!vkCreateCommandPool(*device, &command_pool_create_info, NULL,
+                                command_pool));
+}
+
 int main() {
     // Create window
     SDL_Window* window = window_create();
@@ -220,23 +232,13 @@ int main() {
     VkDevice device;
     vk_create_logical_device(&gpu, queue_family_index, &device);
 
-    //
-    // Create command pool & queue
-    //
+    // Create queue
     VkQueue queue;
+    vkGetDeviceQueue(device, queue_family_index, 0, &queue);
+
+    // Create command pool
     VkCommandPool command_pool;
-    {
-        vkGetDeviceQueue(device, queue_family_index, 0, &queue);
-
-        const VkCommandPoolCreateInfo command_pool_create_info = {
-
-            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-            .queueFamilyIndex = queue_family_index,
-            .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT};
-
-        assert(!vkCreateCommandPool(device, &command_pool_create_info, NULL,
-                                    &command_pool));
-    }
+    vk_create_command_pool(&device, queue_family_index, &command_pool);
 
     //
     // Get color format
