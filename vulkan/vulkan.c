@@ -640,7 +640,7 @@ int main() {
     const VkCommandBufferBeginInfo command_buffer_begin_info = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
     const VkClearValue clear_color = {
-        .color.float32 = {0.0f, 0.0f, 0.0f, 1.0f}};
+        .color.float32 = {0.15f, 0.15f, 0.15f, 1.0f}};
 
     for (usize i = 0; i < swapchain_image_count; i++) {
         const VkRenderPassBeginInfo render_pass_begin_info = {
