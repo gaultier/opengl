@@ -389,17 +389,6 @@ int main() {
     //
     // Fixed functions
     //
-    VkPipelineLayout pipeline_layout;
-
-    const VkPipelineVertexInputStateCreateInfo vertex_input_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
-    };
-
-    const VkPipelineInputAssemblyStateCreateInfo input_assembly = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        .primitiveRestartEnable = VK_FALSE,
-    };
 
     const VkViewport viewport = {
         .x = 0.0f,
@@ -457,6 +446,17 @@ int main() {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     };
 
+    VkPipelineLayout pipeline_layout;
+
+    const VkPipelineVertexInputStateCreateInfo vertex_input_info = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+    };
+
+    const VkPipelineInputAssemblyStateCreateInfo input_assembly = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+        .primitiveRestartEnable = VK_FALSE,
+    };
     assert(!vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL,
                                    &pipeline_layout));
 
