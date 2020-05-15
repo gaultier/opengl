@@ -130,7 +130,6 @@ int main() {
                        debug ? validation_layer : NULL, debug ? 1 : 0);
 
     // Create Vulkan surface
-    VkResult err;
     VkSurfaceKHR surface;
     if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
         fprintf(stderr, "SDL_Vulkan_CreateSurface failed: %s\n",
@@ -141,6 +140,7 @@ int main() {
     //
     // Create Vulkan physical device
     //
+    VkResult err;
     VkPhysicalDevice gpu;
     u32 gpu_count;
     err = vkEnumeratePhysicalDevices(instance, &gpu_count, NULL);
@@ -162,18 +162,6 @@ int main() {
         gpu = gpus[0];
     }
     printf("GPUs detected: %u\n", gpu_count);
-
-    //
-    // Get information about the device, optional
-    //
-    VkPhysicalDeviceProperties device_properties;
-    vkGetPhysicalDeviceProperties(gpu, &device_properties);
-
-    VkPhysicalDeviceFeatures device_features;
-    vkGetPhysicalDeviceFeatures(gpu, &device_features);
-
-    printf("GPU information: name=%s driver_version=%u\n",
-           device_properties.deviceName, device_properties.driverVersion);
 
     //
     // Create command pool & queue
