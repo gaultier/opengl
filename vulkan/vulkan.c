@@ -103,8 +103,7 @@ static void vk_create_instance(VkInstance* instance,
         .enabledLayerCount = validation_layer_count,
         .ppEnabledLayerNames = &validation_layer};
 
-    VkResult err = vkCreateInstance(&instance_create_info, NULL, instance);
-    assert(!err);
+    assert(!vkCreateInstance(&instance_create_info, NULL, instance));
 }
 
 static void vk_create_physical_device(VkInstance* instance,
@@ -152,9 +151,7 @@ int main() {
         exit(1);
     }
 
-    //
-    // Create Vulkan physical device
-    //
+    // Create physical device
     VkPhysicalDevice gpu;
     vk_create_physical_device(&instance, &gpu);
 
