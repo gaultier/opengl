@@ -109,16 +109,14 @@ static void vk_create_instance(VkInstance* instance,
 static void vk_create_physical_device(VkInstance* instance,
                                       VkPhysicalDevice* gpu) {
     u32 gpu_count;
-    VkResult err = vkEnumeratePhysicalDevices(*instance, &gpu_count, NULL);
-    assert(!err);
+    assert(!vkEnumeratePhysicalDevices(*instance, &gpu_count, NULL));
 
     if (gpu_count == 0) {
         fprintf(stderr, "No GPUs detected\n");
         exit(1);
     } else {
         VkPhysicalDevice gpus[gpu_count];
-        err = vkEnumeratePhysicalDevices(*instance, &gpu_count, gpus);
-        assert(!err);
+        assert(!vkEnumeratePhysicalDevices(*instance, &gpu_count, gpus));
         *gpu = gpus[0];
     }
     printf("GPUs detected: %u\n", gpu_count);
@@ -199,7 +197,6 @@ int main() {
     VkDevice device;
     VkQueue queue;
     VkCommandPool command_pool;
-    VkResult err;
     {
         u32 extension_count = 0;
 
@@ -242,25 +239,15 @@ int main() {
     VkColorSpaceKHR color_space;
     u32 format_count;
 
-    err =
-        vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count, NULL);
-    if (err) {
-        fprintf(stderr, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: %d\n",
-                err);
-        exit(1);
-    }
+    assert(!vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count,
+                                                 NULL));
 
     printf("Found %d formats\n", format_count);
 
     VkSurfaceFormatKHR formats[format_count];
 
-    err = vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count,
-                                               formats);
-    if (err) {
-        fprintf(stderr, "vkGetPhysicalDeviceSurfaceFormatsKHR failed: %d\n",
-                err);
-        exit(1);
-    }
+    assert(!vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count,
+                                                 formats));
 
     if (format_count == 0) {
         fprintf(stderr, "Found zero format\n");
@@ -300,8 +287,8 @@ int main() {
     };
 
     VkShaderModule vert_shader_module;
-    err = vkCreateShaderModule(device, &create_info, NULL, &vert_shader_module);
-    assert(!err);
+    assert(
+        !vkCreateShaderModule(device, &create_info, NULL, &vert_shader_module));
 
     printf("Created shader module for `resources/triangle_vert.spv`\n");
 
@@ -318,8 +305,8 @@ int main() {
     };
 
     VkShaderModule frag_shader_module;
-    err = vkCreateShaderModule(device, &create_info, NULL, &frag_shader_module);
-    assert(!err);
+    assert(
+        !vkCreateShaderModule(device, &create_info, NULL, &frag_shader_module));
     printf("Created shader module for `resources/triangle_frag.spv`\n");
 
     const VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
@@ -346,14 +333,8 @@ int main() {
     u32 swapchain_image_count;
     VkExtent2D swapchain_extent;
     VkSurfaceCapabilitiesKHR surface_capabilities;
-    err = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface,
-                                                    &surface_capabilities);
-
-    if (err) {
-        fprintf(stderr,
-                "vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: %d\n", err);
-        exit(1);
-    }
+    assert(!vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface,
+                                                      &surface_capabilities));
 
     // Get drawing surface dimensions
     if (surface_capabilities.currentExtent.width == (UINT32_MAX)) {
@@ -390,13 +371,9 @@ int main() {
         .presentMode = VK_PRESENT_MODE_FIFO_KHR,
         .clipped = 1};
 
-    err =
-        vkCreateSwapchainKHR(device, &swapchain_create_info, NULL, &swapchain);
+    assert(!vkCreateSwapchainKHR(device, &swapchain_create_info, NULL,
+                                 &swapchain));
 
-    if (err) {
-        fprintf(stderr, "vkCreateSwapchainKHR failed: %d\n", err);
-        exit(1);
-    }
     printf("Swapchain image count: %u\n", swapchain_image_count);
 
     //
@@ -470,27 +447,19 @@ int main() {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
     };
 
-    err = vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL,
-                                 &pipeline_layout);
+    assert(!vkCreatePipelineLayout(device, &pipeline_layout_create_info, NULL,
+                                   &pipeline_layout));
 
     VkImage images[swapchain_image_count];
     VkImageView views[swapchain_image_count];
     VkFramebuffer frame_buffers[swapchain_image_count];
 
-    err = vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, 0);
-    if (err) {
-        fprintf(stderr, "vkGetSwapchainImagesKHR failed: %d\n", err);
-        exit(1);
-    }
+    assert(
+        !vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count, 0));
 
     VkImage swapchain_images[swapchain_image_count];
-    err = vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count,
-                                  swapchain_images);
-
-    if (err) {
-        fprintf(stderr, "vkGetSwapchainImagesKHR (2) failed: %d\n", err);
-        exit(1);
-    }
+    assert(!vkGetSwapchainImagesKHR(device, swapchain, &swapchain_image_count,
+                                    swapchain_images));
 
     for (u32 i = 0; i < swapchain_image_count; i++)
         images[i] = swapchain_images[i];
@@ -518,13 +487,9 @@ int main() {
             .image = images[i],
         };
 
-        err =
-            vkCreateImageView(device, &color_attachment_view, NULL, &views[i]);
+        assert(!vkCreateImageView(device, &color_attachment_view, NULL,
+                                  &views[i]));
 
-        if (err) {
-            fprintf(stderr, "vkCreateImageView (%u) failed: %d\n", i, err);
-            exit(1);
-        }
         printf("Initialized image view #%u\n", i);
     }
 
@@ -567,12 +532,7 @@ int main() {
     };
 
     VkRenderPass render_pass;
-    err = vkCreateRenderPass(device, &render_pass_info, NULL, &render_pass);
-
-    if (err) {
-        fprintf(stderr, "vkCreateRenderPass failed: %d\n", err);
-        exit(1);
-    }
+    assert(!vkCreateRenderPass(device, &render_pass_info, NULL, &render_pass));
 
     printf("Created render pass\n");
 
@@ -594,9 +554,8 @@ int main() {
         .renderPass = render_pass,
     };
 
-    err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info,
-                                    NULL, &graphics_pipeline);
-    assert(!err);
+    assert(!vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info,
+                                      NULL, &graphics_pipeline));
     printf("Created graphics pipeline\n");
 
     //
@@ -618,12 +577,8 @@ int main() {
             .layers = 1,
         };
 
-        err = vkCreateFramebuffer(device, &frame_buffer_create_info, NULL,
-                                  &frame_buffers[i]);
-        if (err) {
-            fprintf(stderr, "vkCreateFramebuffer failed: %d\n", err);
-            exit(1);
-        }
+        assert(!vkCreateFramebuffer(device, &frame_buffer_create_info, NULL,
+                                    &frame_buffers[i]));
 
         printf("Created frame buffer #%u\n", i);
     }
@@ -646,19 +601,16 @@ int main() {
     VkFence images_in_flight_fences[MAX_FRAMES_IN_FLIGHT] = {VK_NULL_HANDLE};
 
     for (u32 i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
-                                &image_available_semaphore[i]);
-        assert(!err);
+        assert(!vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                  &image_available_semaphore[i]));
         printf("Created semaphore #%u 1/2\n", i);
 
-        err = vkCreateSemaphore(device, &semaphore_create_info, NULL,
-                                &render_finished_semaphore[i]);
-        assert(!err);
+        assert(!vkCreateSemaphore(device, &semaphore_create_info, NULL,
+                                  &render_finished_semaphore[i]));
         printf("Created semaphore #%u 2/2\n", i);
 
-        err = vkCreateFence(device, &fence_create_info, NULL,
-                            &in_flight_fences[i]);
-        assert(!err);
+        assert(!vkCreateFence(device, &fence_create_info, NULL,
+                              &in_flight_fences[i]));
         printf("Created fence #%u\n", i);
     }
 
@@ -673,7 +625,7 @@ int main() {
     };
 
     VkCommandBuffer command_buffers[swapchain_image_count];
-    err = vkAllocateCommandBuffers(device, &allocate_info, command_buffers);
+    assert(!vkAllocateCommandBuffers(device, &allocate_info, command_buffers));
 
     const VkCommandBufferBeginInfo command_buffer_begin_info = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
@@ -690,9 +642,8 @@ int main() {
             .pClearValues = &clear_color,
         };
 
-        err = vkBeginCommandBuffer(command_buffers[i],
-                                   &command_buffer_begin_info);
-        assert(!err);
+        assert(!vkBeginCommandBuffer(command_buffers[i],
+                                     &command_buffer_begin_info));
 
         vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info,
                              VK_SUBPASS_CONTENTS_INLINE);
@@ -703,8 +654,7 @@ int main() {
         vkCmdDraw(command_buffers[i], 3, 1, 0, 0);
         vkCmdEndRenderPass(command_buffers[i]);
 
-        err = vkEndCommandBuffer(command_buffers[i]);
-        assert(!err);
+        assert(!vkEndCommandBuffer(command_buffers[i]));
     }
 
     //
@@ -766,9 +716,8 @@ int main() {
         };
 
         vkResetFences(device, 1, &in_flight_fences[current_frame]);
-        err = vkQueueSubmit(queue, 1, &submit_info,
-                            in_flight_fences[current_frame]);
-        assert(!err);
+        assert(!vkQueueSubmit(queue, 1, &submit_info,
+                              in_flight_fences[current_frame]));
 
         const VkPresentInfoKHR present_info = {
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
