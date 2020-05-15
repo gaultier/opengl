@@ -226,6 +226,25 @@ static void vk_get_color_info(VkPhysicalDevice* gpu, VkSurfaceKHR* surface,
     printf("Color space: %d\n", *color_space);
 }
 
+void vk_create_shader_module(VkDevice* device, const char path[], u8* buffer,
+                             usize buffer_capacity, usize* buffer_len,
+                             VkShaderModule* shader_module) {
+    if (file_read(path, buffer, buffer_capacity, buffer_len) != 0) {
+        exit(errno);
+    }
+
+    VkShaderModuleCreateInfo create_info = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .codeSize = *buffer_len,
+        .pCode = (u32*)buffer,
+    };
+
+    assert(!vkCreateShaderModule(*device, &create_info, NULL, shader_module));
+    memset(buffer, 0, buffer_capacity);
+
+    printf("Created shader module for `%s`\n", path);
+}
+
 int main() {
     // Create window
     SDL_Window* window = window_create();
@@ -284,43 +303,17 @@ int main() {
     // Shaders
     //
     VkPipelineShaderStageCreateInfo shader_stages[2];
-    const usize buffer_capacity = 10 * 1000 * 1000;
+    const usize buffer_capacity = 10 * 1000;
     u8* buffer = ogl_malloc(buffer_capacity);
     usize buffer_len;
 
-    if (file_read("resources/triangle_vert.spv", buffer, buffer_capacity,
-                  &buffer_len) != 0) {
-        exit(errno);
-    }
-
-    VkShaderModuleCreateInfo create_info = {
-        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = buffer_len,
-        .pCode = (u32*)buffer,
-    };
-
     VkShaderModule vert_shader_module;
-    assert(
-        !vkCreateShaderModule(device, &create_info, NULL, &vert_shader_module));
-
-    printf("Created shader module for `resources/triangle_vert.spv`\n");
-
-    memset(buffer, 0, buffer_capacity);
-    if (file_read("resources/triangle_frag.spv", buffer, buffer_capacity,
-                  &buffer_len) != 0) {
-        exit(errno);
-    }
-
-    create_info = (VkShaderModuleCreateInfo){
-        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .codeSize = buffer_len,
-        .pCode = (u32*)buffer,
-    };
+    vk_create_shader_module(&device, "resources/triangle_vert.spv", buffer,
+                            buffer_capacity, &buffer_len, &vert_shader_module);
 
     VkShaderModule frag_shader_module;
-    assert(
-        !vkCreateShaderModule(device, &create_info, NULL, &frag_shader_module));
-    printf("Created shader module for `resources/triangle_frag.spv`\n");
+    vk_create_shader_module(&device, "resources/triangle_frag.spv", buffer,
+                            buffer_capacity, &buffer_len, &frag_shader_module);
 
     const VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
