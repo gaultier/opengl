@@ -190,11 +190,12 @@ int main() {
     VkPhysicalDevice gpu;
     vk_create_physical_device(&instance, &gpu);
 
+    // Find appropriate queue family
+    const u32 queue_family_index = vk_find_queue_family(&gpu, &surface);
+
     //
     // Create command pool & queue
     //
-    const u32 queue_family_index = vk_find_queue_family(&gpu, &surface);
-
     VkDevice device;
     VkQueue queue;
     VkCommandPool command_pool;
@@ -220,11 +221,7 @@ int main() {
             .ppEnabledExtensionNames = extension_names,
         };
 
-        err = vkCreateDevice(gpu, &device_create_info, NULL, &device);
-        if (err) {
-            fprintf(stderr, "vkCreateDevice failed: %d\n", err);
-            exit(1);
-        }
+        assert(!vkCreateDevice(gpu, &device_create_info, NULL, &device));
 
         vkGetDeviceQueue(device, queue_family_index, 0, &queue);
 
@@ -234,13 +231,8 @@ int main() {
             .queueFamilyIndex = queue_family_index,
             .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT};
 
-        err = vkCreateCommandPool(device, &command_pool_create_info, NULL,
-                                  &command_pool);
-
-        if (err) {
-            fprintf(stderr, "vkCreateCommandPool failed: %d\n", err);
-            exit(1);
-        }
+        assert(!vkCreateCommandPool(device, &command_pool_create_info, NULL,
+                                    &command_pool));
     }
 
     //
