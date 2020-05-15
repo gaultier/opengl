@@ -157,6 +157,31 @@ static u32 vk_find_queue_family(VkPhysicalDevice* gpu, VkSurfaceKHR* surface) {
     return queue_family_index;
 }
 
+static void vk_create_logical_device(VkPhysicalDevice* gpu,
+                                     u32 queue_family_index, VkDevice* device) {
+    u32 extension_count = 0;
+
+    const char* extension_names[MAX_EXTENSIONS];
+    extension_names[extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+
+    f32 queue_priorities[1] = {0.0};
+    const VkDeviceQueueCreateInfo queue_info = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+        .queueFamilyIndex = queue_family_index,
+        .queueCount = 1,
+        .pQueuePriorities = queue_priorities};
+
+    const VkDeviceCreateInfo device_create_info = {
+        .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .queueCreateInfoCount = 1,
+        .pQueueCreateInfos = &queue_info,
+        .enabledExtensionCount = extension_count,
+        .ppEnabledExtensionNames = extension_names,
+    };
+
+    assert(!vkCreateDevice(*gpu, &device_create_info, NULL, device));
+}
+
 int main() {
     // Create window
     SDL_Window* window = window_create();
@@ -191,35 +216,16 @@ int main() {
     // Find appropriate queue family
     const u32 queue_family_index = vk_find_queue_family(&gpu, &surface);
 
+    // Create logical device
+    VkDevice device;
+    vk_create_logical_device(&gpu, queue_family_index, &device);
+
     //
     // Create command pool & queue
     //
-    VkDevice device;
     VkQueue queue;
     VkCommandPool command_pool;
     {
-        u32 extension_count = 0;
-
-        const char* extension_names[MAX_EXTENSIONS];
-        extension_names[extension_count++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-
-        f32 queue_priorities[1] = {0.0};
-        const VkDeviceQueueCreateInfo queue_info = {
-            .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
-            .queueFamilyIndex = queue_family_index,
-            .queueCount = 1,
-            .pQueuePriorities = queue_priorities};
-
-        const VkDeviceCreateInfo device_create_info = {
-            .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            .queueCreateInfoCount = 1,
-            .pQueueCreateInfos = &queue_info,
-            .enabledExtensionCount = extension_count,
-            .ppEnabledExtensionNames = extension_names,
-        };
-
-        assert(!vkCreateDevice(gpu, &device_create_info, NULL, &device));
-
         vkGetDeviceQueue(device, queue_family_index, 0, &queue);
 
         const VkCommandPoolCreateInfo command_pool_create_info = {
