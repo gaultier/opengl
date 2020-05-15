@@ -336,15 +336,15 @@ int main() {
     vk_create_shader_stages(&vert_shader_module, &frag_shader_module,
                             shader_stages);
 
+    VkSurfaceCapabilitiesKHR surface_capabilities;
+    assert(!vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface,
+                                                      &surface_capabilities));
     //
     // Swap chain
     //
     VkSwapchainKHR swapchain;
     u32 swapchain_image_count;
     VkExtent2D swapchain_extent;
-    VkSurfaceCapabilitiesKHR surface_capabilities;
-    assert(!vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gpu, surface,
-                                                      &surface_capabilities));
 
     // Get drawing surface dimensions
     if (surface_capabilities.currentExtent.width == (UINT32_MAX)) {
