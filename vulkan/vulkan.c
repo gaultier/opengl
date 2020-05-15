@@ -226,9 +226,10 @@ static void vk_get_color_info(VkPhysicalDevice* gpu, VkSurfaceKHR* surface,
     printf("Color space: %d\n", *color_space);
 }
 
-void vk_create_shader_module(VkDevice* device, const char path[], u8* buffer,
-                             usize buffer_capacity, usize* buffer_len,
-                             VkShaderModule* shader_module) {
+static void vk_create_shader_module(VkDevice* device, const char path[],
+                                    u8* buffer, usize buffer_capacity,
+                                    usize* buffer_len,
+                                    VkShaderModule* shader_module) {
     if (file_read(path, buffer, buffer_capacity, buffer_len) != 0) {
         exit(errno);
     }
@@ -243,6 +244,27 @@ void vk_create_shader_module(VkDevice* device, const char path[], u8* buffer,
     memset(buffer, 0, buffer_capacity);
 
     printf("Created shader module for `%s`\n", path);
+}
+
+static void vk_create_shader_stages(
+    VkShaderModule* vert_shader_module, VkShaderModule* frag_shader_module,
+    VkPipelineShaderStageCreateInfo shader_stages[2]) {
+    const VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = VK_SHADER_STAGE_VERTEX_BIT,
+        .module = *vert_shader_module,
+        .pName = "main"  // Entrypoint function
+    };
+
+    const VkPipelineShaderStageCreateInfo frag_shader_stage_info = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+        .module = *frag_shader_module,
+        .pName = "main"  // Entrypoint function
+    };
+
+    shader_stages[0] = vert_shader_stage_info;
+    shader_stages[1] = frag_shader_stage_info;
 }
 
 int main() {
@@ -291,17 +313,13 @@ int main() {
     VkCommandPool command_pool;
     vk_create_command_pool(&device, queue_family_index, &command_pool);
 
-    //
     // Get color format
-    //
     VkFormat format;
     u32 format_count;
     VkColorSpaceKHR color_space;
     vk_get_color_info(&gpu, &surface, &format, &format_count, &color_space);
 
-    //
-    // Shaders
-    //
+    // Set up shaders
     VkPipelineShaderStageCreateInfo shader_stages[2];
     const usize buffer_capacity = 10 * 1000;
     u8* buffer = ogl_malloc(buffer_capacity);
@@ -315,22 +333,8 @@ int main() {
     vk_create_shader_module(&device, "resources/triangle_frag.spv", buffer,
                             buffer_capacity, &buffer_len, &frag_shader_module);
 
-    const VkPipelineShaderStageCreateInfo vert_shader_stage_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-        .stage = VK_SHADER_STAGE_VERTEX_BIT,
-        .module = vert_shader_module,
-        .pName = "main"  // Entrypoint function
-    };
-
-    const VkPipelineShaderStageCreateInfo frag_shader_stage_info = {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-        .stage = VK_SHADER_STAGE_FRAGMENT_BIT,
-        .module = frag_shader_module,
-        .pName = "main"  // Entrypoint function
-    };
-
-    shader_stages[0] = vert_shader_stage_info;
-    shader_stages[1] = frag_shader_stage_info;
+    vk_create_shader_stages(&vert_shader_module, &frag_shader_module,
+                            shader_stages);
 
     //
     // Swap chain
