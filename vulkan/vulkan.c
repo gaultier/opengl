@@ -17,10 +17,7 @@
 
 #define MAX_FRAMES_IN_FLIGHT 2
 
-int main() {
-    //
-    // SDL init
-    //
+SDL_Window* window_create() {
     SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "Unable to initialize SDL: %s", SDL_GetError());
@@ -43,6 +40,11 @@ int main() {
         exit(1);
     }
 
+    return window;
+}
+
+int main() {
+    SDL_Window* window = window_create();
     //
     // Get Vulkan extensions
     //
@@ -54,8 +56,7 @@ int main() {
 
     const VkApplicationInfo app_info = {
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .pApplicationName = "hello triangle",
-        .apiVersion = VK_MAKE_VERSION(0, 0, 1)};
+        .apiVersion = VK_MAKE_VERSION(1, 0, 0)};
 
     u32 detected_extension_count = 64 - extension_count;
     if (!SDL_Vulkan_GetInstanceExtensions(window, &detected_extension_count,
