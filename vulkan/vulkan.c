@@ -104,10 +104,25 @@ static void vk_create_instance(VkInstance* instance,
         .ppEnabledLayerNames = &validation_layer};
 
     VkResult err = vkCreateInstance(&instance_create_info, NULL, instance);
-    if (err) {
-        fprintf(stderr, "vkCreateInstance failed: %d\n", err);
+    assert(!err);
+}
+
+static void vk_create_physical_device(VkInstance* instance,
+                                      VkPhysicalDevice* gpu) {
+    u32 gpu_count;
+    VkResult err = vkEnumeratePhysicalDevices(*instance, &gpu_count, NULL);
+    assert(!err);
+
+    if (gpu_count == 0) {
+        fprintf(stderr, "No GPUs detected\n");
         exit(1);
+    } else {
+        VkPhysicalDevice gpus[gpu_count];
+        err = vkEnumeratePhysicalDevices(*instance, &gpu_count, gpus);
+        assert(!err);
+        *gpu = gpus[0];
     }
+    printf("GPUs detected: %u\n", gpu_count);
 }
 
 int main() {
@@ -140,32 +155,13 @@ int main() {
     //
     // Create Vulkan physical device
     //
-    VkResult err;
     VkPhysicalDevice gpu;
-    u32 gpu_count;
-    err = vkEnumeratePhysicalDevices(instance, &gpu_count, NULL);
-    if (err) {
-        fprintf(stderr, "vkEnumeratePhysicalDevices failed: %d\n", err);
-        exit(1);
-    }
-
-    if (gpu_count == 0) {
-        fprintf(stderr, "No GPUs detected\n");
-        gpu = VK_NULL_HANDLE;
-    } else {
-        VkPhysicalDevice gpus[gpu_count];
-        err = vkEnumeratePhysicalDevices(instance, &gpu_count, gpus);
-        if (err) {
-            fprintf(stderr, "vkEnumeratePhysicalDevices (2) failed: %d\n", err);
-            exit(1);
-        }
-        gpu = gpus[0];
-    }
-    printf("GPUs detected: %u\n", gpu_count);
+    vk_create_physical_device(&instance, &gpu);
 
     //
     // Create command pool & queue
     //
+    VkResult err;
     VkDevice device;
     VkQueue queue;
     VkCommandPool command_pool;
