@@ -24,9 +24,6 @@ SDL_Window* window_create() {
         exit(1);
     }
 
-    //
-    // Create window
-    //
     u32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN;
     const char window_title[] = "hello";
     const u16 window_width = 1024;
@@ -43,34 +40,32 @@ SDL_Window* window_create() {
     return window;
 }
 
-int main() {
-    SDL_Window* window = window_create();
-    //
-    // Get Vulkan extensions
-    //
-    VkResult err;
-    VkInstance instance;
-    u32 extension_count = 0;
-    const char* extension_names[MAX_EXTENSIONS] = {0};
-    extension_names[extension_count++] = VK_KHR_SURFACE_EXTENSION_NAME;
+void vk_get_extensions(SDL_Window* window,
+                       const char* extension_names[MAX_EXTENSIONS],
+                       u32* extension_count) {
+    extension_names[*extension_count] = VK_KHR_SURFACE_EXTENSION_NAME;
+    *extension_count = *extension_count + 1;
 
-    const VkApplicationInfo app_info = {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .apiVersion = VK_MAKE_VERSION(1, 0, 0)};
-
-    u32 detected_extension_count = 64 - extension_count;
+    u32 detected_extension_count = 64 - *extension_count;
     if (!SDL_Vulkan_GetInstanceExtensions(window, &detected_extension_count,
-                                          &extension_names[extension_count])) {
+                                          &extension_names[*extension_count])) {
         fprintf(stderr, "SDL_GetVulkanInstanceExtensions failed: %s\n",
                 SDL_GetError());
         exit(1);
     }
-    extension_count += detected_extension_count;
+    *extension_count += detected_extension_count;
 
-    printf("Instance extensions: count=%u\n", extension_count);
-    for (u32 i = 0; i < extension_count; i++) {
+    printf("Instance extensions: count=%u\n", *extension_count);
+    for (u32 i = 0; i < *extension_count; i++) {
         printf("Extension: %s\n", extension_names[i]);
     }
+}
+
+int main() {
+    SDL_Window* window = window_create();
+    u32 extension_count = 0;
+    const char* extension_names[MAX_EXTENSIONS] = {0};
+    vk_get_extensions(window, extension_names, &extension_count);
 
     ///
     // Get validation layers
@@ -103,6 +98,13 @@ int main() {
     //
     // Create Vulkan instance
     //
+    VkInstance instance;
+    VkResult err;
+
+    const VkApplicationInfo app_info = {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .apiVersion = VK_MAKE_VERSION(1, 0, 0)};
+
     const char* debug = getenv("DEBUG");
     const VkInstanceCreateInfo instance_create_info = {
         .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
