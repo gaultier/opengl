@@ -86,6 +86,30 @@ static void vk_get_validation_layers(const char* validation_layer) {
     printf("Validation layer found, activating\n");
 }
 
+static void vk_create_instance(VkInstance* instance,
+                               const char* extension_names[MAX_EXTENSIONS],
+                               u32 extension_count,
+                               const char* validation_layer,
+                               u32 validation_layer_count) {
+    const VkApplicationInfo app_info = {
+        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .apiVersion = VK_MAKE_VERSION(1, 0, 0)};
+
+    const VkInstanceCreateInfo instance_create_info = {
+        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pApplicationInfo = &app_info,
+        .enabledExtensionCount = extension_count,
+        .ppEnabledExtensionNames = extension_names,
+        .enabledLayerCount = validation_layer_count,
+        .ppEnabledLayerNames = &validation_layer};
+
+    VkResult err = vkCreateInstance(&instance_create_info, NULL, instance);
+    if (err) {
+        fprintf(stderr, "vkCreateInstance failed: %d\n", err);
+        exit(1);
+    }
+}
+
 int main() {
     SDL_Window* window = window_create();
 
@@ -98,37 +122,19 @@ int main() {
     //
     const char* validation_layer = "VK_LAYER_KHRONOS_validation";
     const char* const debug = getenv("DEBUG");
-    if (debug) {
-        vk_get_validation_layers(validation_layer);
-    }
+    if (debug) vk_get_validation_layers(validation_layer);
 
     //
     // Create Vulkan instance
     //
     VkInstance instance;
-    VkResult err;
-
-    const VkApplicationInfo app_info = {
-        .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-        .apiVersion = VK_MAKE_VERSION(1, 0, 0)};
-
-    const VkInstanceCreateInfo instance_create_info = {
-        .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pApplicationInfo = &app_info,
-        .enabledExtensionCount = extension_count,
-        .ppEnabledExtensionNames = extension_names,
-        .enabledLayerCount = debug ? 1 : 0,
-        .ppEnabledLayerNames = debug ? &validation_layer : NULL};
-
-    err = vkCreateInstance(&instance_create_info, NULL, &instance);
-    if (err) {
-        fprintf(stderr, "vkCreateInstance failed: %d\n", err);
-        exit(1);
-    }
+    vk_create_instance(&instance, extension_names, extension_count,
+                       debug ? validation_layer : NULL, debug ? 1 : 0);
 
     //
     // Create Vulkan surface
     //
+    VkResult err;
     VkSurfaceKHR surface;
     if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
         fprintf(stderr, "SDL_Vulkan_CreateSurface failed: %s\n",
