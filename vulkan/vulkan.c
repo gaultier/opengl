@@ -111,29 +111,25 @@ static void vk_create_instance(VkInstance* instance,
 }
 
 int main() {
+    // Create window
     SDL_Window* window = window_create();
 
+    // get extensions
     u32 extension_count = 0;
     const char* extension_names[MAX_EXTENSIONS] = {0};
     vk_get_extensions(window, extension_names, &extension_count);
 
-    ///
     // Get validation layers
-    //
     const char* validation_layer = "VK_LAYER_KHRONOS_validation";
     const char* const debug = getenv("DEBUG");
     if (debug) vk_get_validation_layers(validation_layer);
 
-    //
-    // Create Vulkan instance
-    //
+    // Create instance
     VkInstance instance;
     vk_create_instance(&instance, extension_names, extension_count,
                        debug ? validation_layer : NULL, debug ? 1 : 0);
 
-    //
     // Create Vulkan surface
-    //
     VkResult err;
     VkSurfaceKHR surface;
     if (!SDL_Vulkan_CreateSurface(window, instance, &surface)) {
