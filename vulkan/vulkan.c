@@ -280,34 +280,6 @@ int main() {
     VkColorSpaceKHR color_space;
     vk_get_color_info(&gpu, &surface, &format, &format_count, &color_space);
 
-    assert(!vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count,
-                                                 NULL));
-
-    printf("Found %d formats\n", format_count);
-
-    VkSurfaceFormatKHR formats[format_count];
-
-    assert(!vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &format_count,
-                                                 formats));
-
-    if (format_count == 0) {
-        fprintf(stderr, "Found zero format\n");
-        exit(1);
-    }
-
-    if (format_count == 1 && formats[0].format == VK_FORMAT_UNDEFINED) {
-        printf(
-            "Found only one format which is undefined,defaulting to "
-            "VK_FORMAT_B8G8R8A8_SRGB\n");
-        format = VK_FORMAT_B8G8R8A8_SRGB;
-    } else {
-        format = formats[0].format;
-    }
-
-    color_space = formats[0].colorSpace;
-    printf("Format: %d\n", format);
-    printf("Color space: %d\n", color_space);
-
     //
     // Shaders
     //
