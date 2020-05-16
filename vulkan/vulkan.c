@@ -449,8 +449,34 @@ int main() {
 
     VkPipelineLayout pipeline_layout;
 
+    // Per vertex data
+    struct Vertex {
+        vec2 position;
+        vec3 color;
+    } vertices[] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                    {{0.5f, 05.f}, {0.0f, 1.0f, 0.0f}},
+                    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+
+    VkVertexInputBindingDescription vertex_binding_description = {
+        .stride = sizeof(struct Vertex),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
+
+    VkVertexInputAttributeDescription vertex_attribute_descriptions[2] = {
+        // Metadata about the `position` field
+        {.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+         .offset = offsetof(struct Vertex, position)},
+        // Metadata about the `color` field
+        {.location = 1,
+         .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+         .offset = offsetof(struct Vertex, color)}};
+
+    // Shader input
     const VkPipelineVertexInputStateCreateInfo vertex_input_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+        .vertexBindingDescriptionCount = 1,
+        .vertexAttributeDescriptionCount = 2,
+        .pVertexBindingDescriptions = &vertex_binding_description,
+        .pVertexAttributeDescriptions = vertex_attribute_descriptions,
     };
 
     const VkPipelineInputAssemblyStateCreateInfo input_assembly = {
@@ -558,27 +584,6 @@ int main() {
         .pDynamicStates = dynamic_states,
         .dynamicStateCount = dynamic_states_count,
     };
-
-    // Per vertex data
-    struct Vertex {
-        vec2 position;
-        vec3 color;
-    } vertices[] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-                    {{0.5f, 05.f}, {0.0f, 1.0f, 0.0f}},
-                    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
-
-    VkVertexInputBindingDescription vertex_binding_description = {
-        .stride = sizeof(struct Vertex),
-        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
-
-    VkVertexInputAttributeDescription vertex_attribute_descriptions[2] = {
-        // Metadata about the `position` field
-        {.format = VK_FORMAT_R32G32B32A32_SFLOAT,
-         .offset = offsetof(struct Vertex, position)},
-        // Metadata about the `color` field
-        {.location = 1,
-         .format = VK_FORMAT_R32G32B32A32_SFLOAT,
-         .offset = offsetof(struct Vertex, color)}};
 
     //
     // Graphics pipeline
