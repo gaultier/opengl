@@ -665,6 +665,17 @@ int main() {
     }
 
     //
+    // Vertex buffers
+    //
+    VkBufferCreateInfo buffer_create_info = {
+        .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+        .size = sizeof(vertices),
+        .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE};
+    VkBuffer vertex_buffer;
+    assert(!vkCreateBuffer(device, &buffer_create_info, NULL, &vertex_buffer));
+
+    //
     // Command buffers
     //
     const VkCommandBufferAllocateInfo allocate_info = {
