@@ -546,6 +546,18 @@ int main() {
 
     printf("Created render pass\n");
 
+    // Dynamic state
+    VkDynamicState dynamic_states[VK_DYNAMIC_STATE_RANGE_SIZE] = {0};
+    u32 dynamic_states_count = 0;
+    dynamic_states[dynamic_states_count++] = VK_DYNAMIC_STATE_VIEWPORT;
+    dynamic_states[dynamic_states_count++] = VK_DYNAMIC_STATE_SCISSOR;
+
+    VkPipelineDynamicStateCreateInfo dynamic_states_create_info = {
+        .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
+        .pDynamicStates = dynamic_states,
+        .dynamicStateCount = dynamic_states_count,
+    };
+
     //
     // Graphics pipeline
     //
@@ -562,6 +574,7 @@ int main() {
         .pColorBlendState = &color_blending,
         .layout = pipeline_layout,
         .renderPass = render_pass,
+        .pDynamicState = &dynamic_states_create_info,
     };
 
     assert(!vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipeline_info,
