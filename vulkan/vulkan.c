@@ -571,6 +571,15 @@ int main() {
         .stride = sizeof(struct Vertex),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
 
+    VkVertexInputAttributeDescription vertex_attribute_descriptions[2] = {
+        // Metadata about the `position` field
+        {.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+         .offset = offsetof(struct Vertex, position)},
+        // Metadata about the `color` field
+        {.location = 1,
+         .format = VK_FORMAT_R32G32B32A32_SFLOAT,
+         .offset = offsetof(struct Vertex, color)}};
+
     //
     // Graphics pipeline
     //
