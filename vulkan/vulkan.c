@@ -675,6 +675,10 @@ int main() {
     VkBuffer vertex_buffer;
     assert(!vkCreateBuffer(device, &buffer_create_info, NULL, &vertex_buffer));
 
+    // Get memory requirements
+    VkMemoryRequirements memory_requirements;
+    vkGetBufferMemoryRequirements(device, vertex_buffer, &memory_requirements);
+
     //
     // Command buffers
     //
