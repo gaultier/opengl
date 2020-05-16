@@ -6,6 +6,7 @@
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL_vulkan.h>
 #include <assert.h>
+#include <cglm/cglm.h>
 #include <stdio.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
@@ -557,6 +558,18 @@ int main() {
         .pDynamicStates = dynamic_states,
         .dynamicStateCount = dynamic_states_count,
     };
+
+    // Per vertex data
+    struct Vertex {
+        vec2 position;
+        vec3 color;
+    } vertices[] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+                    {{0.5f, 05.f}, {0.0f, 1.0f, 0.0f}},
+                    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+
+    VkVertexInputBindingDescription vertex_binding_description = {
+        .stride = sizeof(struct Vertex),
+        .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
 
     //
     // Graphics pipeline
