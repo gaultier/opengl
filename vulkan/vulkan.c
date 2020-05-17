@@ -580,10 +580,9 @@ int main() {
     printf("Created render pass\n");
 
     // Dynamic state
-    VkDynamicState dynamic_states[VK_DYNAMIC_STATE_RANGE_SIZE] = {0};
-    u32 dynamic_states_count = 0;
-    dynamic_states[dynamic_states_count++] = VK_DYNAMIC_STATE_VIEWPORT;
-    dynamic_states[dynamic_states_count++] = VK_DYNAMIC_STATE_SCISSOR;
+    const u32 dynamic_states_count = 2;
+    VkDynamicState dynamic_states[2] = {VK_DYNAMIC_STATE_VIEWPORT,
+                                        VK_DYNAMIC_STATE_SCISSOR};
 
     VkPipelineDynamicStateCreateInfo dynamic_states_create_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
