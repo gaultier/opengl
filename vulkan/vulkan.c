@@ -742,6 +742,16 @@ int main() {
         assert(!vkBeginCommandBuffer(command_buffers[i],
                                      &command_buffer_begin_info));
 
+        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info,
+                             VK_SUBPASS_CONTENTS_INLINE);
+
+        vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          graphics_pipeline);
+
+        const VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer,
+                               offsets);
+
         const VkViewport viewport = {
             .width = swapchain_extent.width,
             .height = swapchain_extent.height,
@@ -754,16 +764,6 @@ int main() {
         const VkRect2D scissor = {.extent = swapchain_extent};
         vkCmdSetViewport(command_buffers[i], 0, 1, &viewport);
         vkCmdSetScissor(command_buffers[i], 0, 1, &scissor);
-        vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info,
-                             VK_SUBPASS_CONTENTS_INLINE);
-
-        vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          graphics_pipeline);
-
-        const VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer,
-                               offsets);
-
         vkCmdDraw(command_buffers[i], /* FIXME */ 3, 1, 0, 0);
         vkCmdEndRenderPass(command_buffers[i]);
 
