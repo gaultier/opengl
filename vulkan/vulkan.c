@@ -269,9 +269,12 @@ static void vk_create_shader_stages(
 }
 
 static u32 memory_type_find(VkPhysicalDeviceMemoryProperties* memory_properties,
-                            u32 type) {
+                            u32 type_flag,
+                            VkMemoryPropertyFlags properties_flag) {
     for (u32 i = 0; i < memory_properties->memoryTypeCount; i++) {
-        if (type & (1 << i)) return i;
+        if ((type_flag & (1 << i)) &&
+            (memory_properties->memoryTypes[i].propertyFlags & properties_flag))
+            return i;
     }
     assert(0);
 }
@@ -689,7 +692,19 @@ int main() {
 
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(gpu, &memory_properties);
-    u32 type = memory_type_find(&memory_properties, 0);  // FIXME
+    VkMemoryAllocateInfo memory_allocate_info = {
+        .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .allocationSize = memory_requirements.size,
+        .memoryTypeIndex = memory_type_find(
+            &memory_properties, memory_requirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)};
+
+    VkDeviceMemory vertex_buffer_memory;
+    assert(!vkAllocateMemory(device, &memory_allocate_info, NULL,
+                             &vertex_buffer_memory));
+    printf("Allocated memory for the vertex buffer\n");
+    vkBindBufferMemory(device, vertex_buffer, vertex_buffer_memory, 0);
 
     //
     // Command buffers
