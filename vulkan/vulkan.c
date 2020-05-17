@@ -700,11 +700,18 @@ int main() {
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)};
 
+    // Allocate
     VkDeviceMemory vertex_buffer_memory;
     assert(!vkAllocateMemory(device, &memory_allocate_info, NULL,
                              &vertex_buffer_memory));
     printf("Allocated memory for the vertex buffer\n");
     vkBindBufferMemory(device, vertex_buffer, vertex_buffer_memory, 0);
+
+    // Fill the memory
+    void* data;
+    vkMapMemory(device, vertex_buffer_memory, 0, buffer_create_info.size, 0,
+                &data);
+    memcpy(data, vertex_buffer, buffer_create_info.size);
 
     //
     // Command buffers
