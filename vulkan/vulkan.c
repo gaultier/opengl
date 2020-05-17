@@ -454,9 +454,6 @@ int main() {
     } vertices[] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                     {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
                     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
-    printf("Vertices: size=%lu count=%lu vertex_struct_size=%lu\n",
-           sizeof(vertices), sizeof(vertices) / sizeof(vertices[0]),
-           sizeof(vertices[0]));
 
     VkVertexInputBindingDescription vertex_binding_description = {
         .binding = 0,
@@ -580,8 +577,8 @@ int main() {
     printf("Created render pass\n");
 
     // Dynamic state
-    VkDynamicState dynamic_states[2] = {VK_DYNAMIC_STATE_VIEWPORT,
-                                        VK_DYNAMIC_STATE_SCISSOR};
+    const VkDynamicState dynamic_states[2] = {VK_DYNAMIC_STATE_VIEWPORT,
+                                              VK_DYNAMIC_STATE_SCISSOR};
 
     VkPipelineDynamicStateCreateInfo dynamic_states_create_info = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
@@ -671,7 +668,7 @@ int main() {
     //
     // Vertex buffers
     //
-    VkBufferCreateInfo buffer_create_info = {
+    const VkBufferCreateInfo buffer_create_info = {
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .size = sizeof(vertices),
         .usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
@@ -685,7 +682,7 @@ int main() {
 
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(gpu, &memory_properties);
-    VkMemoryAllocateInfo memory_allocate_info = {
+    const VkMemoryAllocateInfo memory_allocate_info = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
         .allocationSize = memory_requirements.size,
         .memoryTypeIndex = memory_type_find(
