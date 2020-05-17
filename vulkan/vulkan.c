@@ -273,7 +273,8 @@ static u32 memory_type_find(VkPhysicalDeviceMemoryProperties* memory_properties,
                             VkMemoryPropertyFlags properties_flag) {
     for (u32 i = 0; i < memory_properties->memoryTypeCount; i++) {
         if ((type_flag & (1 << i)) &&
-            (memory_properties->memoryTypes[i].propertyFlags & properties_flag))
+            (memory_properties->memoryTypes[i].propertyFlags &
+             properties_flag) == properties_flag)
             return i;
     }
     assert(0);
@@ -712,14 +713,17 @@ int main() {
     VkDeviceMemory vertex_buffer_memory;
     assert(!vkAllocateMemory(device, &memory_allocate_info, NULL,
                              &vertex_buffer_memory));
-    printf("Allocated memory for the vertex buffer\n");
+    /* printf("Allocated memory for the vertex buffer: size=%lld\n", */
+    /*        memory_requirements.size); */
     vkBindBufferMemory(device, vertex_buffer, vertex_buffer_memory, 0);
 
     // Fill the memory
     void* data;
     vkMapMemory(device, vertex_buffer_memory, 0, buffer_create_info.size, 0,
                 &data);
-    memcpy(data, vertex_buffer, buffer_create_info.size);
+    assert(data != NULL);
+    memcpy(data, vertices, buffer_create_info.size);
+    vkUnmapMemory(device, vertex_buffer_memory);
 
     //
     // Command buffers
@@ -762,6 +766,8 @@ int main() {
         vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer,
                                offsets);
 
+        vkCmdSetViewport(command_buffers[i], 0, 1, &viewport);
+        vkCmdSetScissor(command_buffers[i], 0, 1, &scissor);
         vkCmdDraw(command_buffers[i], /* FIXME */ 3, 1, 0, 0);
         vkCmdEndRenderPass(command_buffers[i]);
 
