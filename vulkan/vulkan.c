@@ -467,17 +467,25 @@ int main() {
     } vertices[] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
                     {{0.5f, 05.f}, {0.0f, 1.0f, 0.0f}},
                     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
+    printf("Vertices: size=%lu count=%lu vertex_struct_size=%lu\n",
+           sizeof(vertices), sizeof(vertices) / sizeof(vertices[0]),
+           sizeof(vertices[0]));
 
     VkVertexInputBindingDescription vertex_binding_description = {
+        .binding = 0,
         .stride = sizeof(struct Vertex),
         .inputRate = VK_VERTEX_INPUT_RATE_VERTEX};
 
     VkVertexInputAttributeDescription vertex_attribute_descriptions[2] = {
         // Metadata about the `position` field
-        {.format = VK_FORMAT_R32G32B32A32_SFLOAT,
+        {.format = VK_FORMAT_R32G32_SFLOAT,
+         .binding = 0,
+         .location = 0,
          .offset = offsetof(struct Vertex, position)},
+
         // Metadata about the `color` field
         {.location = 1,
+         .binding = 0,
          .format = VK_FORMAT_R32G32B32A32_SFLOAT,
          .offset = offsetof(struct Vertex, color)}};
 
