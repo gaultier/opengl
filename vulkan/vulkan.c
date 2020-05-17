@@ -403,24 +403,10 @@ int main() {
     // Fixed functions
     //
 
-    const VkViewport viewport = {
-        .x = 0.0f,
-        .y = 0.0f,
-        .width = swapchain_extent.width,
-        .height = swapchain_extent.height,
-        .minDepth = 0.0f,
-        .maxDepth = 1.0f,
-    };
-    printf("Viewport: w=%u h=%u\n", (u32)viewport.width, (u32)viewport.height);
-
-    const VkRect2D scissor = {.extent = swapchain_extent};
-
     const VkPipelineViewportStateCreateInfo viewport_state = {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
         .viewportCount = 1,
-        .pViewports = &viewport,
         .scissorCount = 1,
-        .pScissors = &scissor,
     };
 
     const VkPipelineRasterizationStateCreateInfo rasterizer = {
@@ -466,7 +452,7 @@ int main() {
         vec2 position;
         vec3 color;
     } vertices[] = {{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-                    {{0.5f, 05.f}, {0.0f, 1.0f, 0.0f}},
+                    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
                     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}};
     printf("Vertices: size=%lu count=%lu vertex_struct_size=%lu\n",
            sizeof(vertices), sizeof(vertices) / sizeof(vertices[0]),
@@ -756,6 +742,18 @@ int main() {
         assert(!vkBeginCommandBuffer(command_buffers[i],
                                      &command_buffer_begin_info));
 
+        const VkViewport viewport = {
+            .width = swapchain_extent.width,
+            .height = swapchain_extent.height,
+            .minDepth = 0.0f,
+            .maxDepth = 1.0f,
+        };
+        printf("Viewport: w=%u h=%u\n", (u32)viewport.width,
+               (u32)viewport.height);
+
+        const VkRect2D scissor = {.extent = swapchain_extent};
+        vkCmdSetViewport(command_buffers[i], 0, 1, &viewport);
+        vkCmdSetScissor(command_buffers[i], 0, 1, &scissor);
         vkCmdBeginRenderPass(command_buffers[i], &render_pass_begin_info,
                              VK_SUBPASS_CONTENTS_INLINE);
 
@@ -766,8 +764,6 @@ int main() {
         vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer,
                                offsets);
 
-        vkCmdSetViewport(command_buffers[i], 0, 1, &viewport);
-        vkCmdSetScissor(command_buffers[i], 0, 1, &scissor);
         vkCmdDraw(command_buffers[i], /* FIXME */ 3, 1, 0, 0);
         vkCmdEndRenderPass(command_buffers[i]);
 
