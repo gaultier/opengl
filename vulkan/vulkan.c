@@ -268,6 +268,14 @@ static void vk_create_shader_stages(
     shader_stages[1] = frag_shader_stage_info;
 }
 
+static u32 memory_type_find(VkPhysicalDeviceMemoryProperties* memory_properties,
+                            u32 type) {
+    for (u32 i = 0; i < memory_properties->memoryTypeCount; i++) {
+        if (type & (1 << i)) return i;
+    }
+    assert(0);
+}
+
 int main() {
     // Create window
     SDL_Window* window = window_create();
@@ -678,6 +686,10 @@ int main() {
     // Get memory requirements
     VkMemoryRequirements memory_requirements;
     vkGetBufferMemoryRequirements(device, vertex_buffer, &memory_requirements);
+
+    VkPhysicalDeviceMemoryProperties memory_properties;
+    vkGetPhysicalDeviceMemoryProperties(gpu, &memory_properties);
+    u32 type = memory_type_find(&memory_properties, 0);  // FIXME
 
     //
     // Command buffers
