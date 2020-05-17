@@ -750,7 +750,11 @@ int main() {
         vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
                           graphics_pipeline);
 
-        vkCmdDraw(command_buffers[i], 3, 1, 0, 0);
+        const VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(command_buffers[i], 0, 1, &vertex_buffer,
+                               offsets);
+
+        vkCmdDraw(command_buffers[i], /* FIXME */ 3, 1, 0, 0);
         vkCmdEndRenderPass(command_buffers[i]);
 
         assert(!vkEndCommandBuffer(command_buffers[i]));
